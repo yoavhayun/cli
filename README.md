@@ -55,7 +55,7 @@ Basic Example:
     This is a simple code that controls an integer via the Setting decorator
     It can only set/return it's value or add another integer to it.
 
-                from cli import CLI
+                from cli.cli import CLI
 
                 cli = CLI()
 
@@ -102,10 +102,12 @@ Basic Example:
                         return self.CLI.value
                 
                 if __name__ == "__main__":
-                    ic = IntegerController()
-                    ic.CLI.run()
+                    IntegerController().CLI.main()
+    
+    When calling the script with arguments, it will execute them and exit. If not arguments are passed,
+    It will start a cli program.
 
-    This provides the following interface behavior:
+    This provides the following cli behavior:
 
                 IntegerController> .setting value
                 value=None
