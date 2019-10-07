@@ -221,9 +221,9 @@ from prompt_toolkit.patch_stdout import patch_stdout
 from cli._colors import colors
 import cli._cli_prompt as cli_prompt
 import cli._cli_parser as cli_parser
+import cli._cli_methods as cli_methods
+import cli._cli_logger as cli_logger
 from cli._cli_session import cli_session
-from cli._cli_methods import CLI_Methods
-from cli._cli_logger import CLI_Logger
 
 class CLI():
     """
@@ -382,7 +382,7 @@ class CLI():
     def __init__(self):
         self.wrapped = None
         # Saves all the different implementations of all the methods
-        self.methods_dict = CLI_Methods()
+        self.methods_dict = cli_methods.CLI_Methods()
         # Saves all the setting values
         self._settings = OrderedDict()
         self._methods = OrderedDict()
@@ -411,7 +411,7 @@ class CLI():
         self.description = "{}{}{}".format(self.name, 
                                             ' v' + self.version if self.version else '', 
                                             ': ' + modifiers["description"] if modifiers["description"] else '')
-        self.logger = CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO).get_logger()
+        self.logger = cli_logger.CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO).get_logger()
         return self
 
     def _redirection(self, func):
