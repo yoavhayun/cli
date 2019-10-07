@@ -218,12 +218,12 @@ from enum import Enum
 import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 
-from cli._colors import colors
-import cli._cli_prompt as cli_prompt
-import cli._cli_parser as cli_parser
-import cli._cli_methods as cli_methods
-import cli._cli_logger as cli_logger
-from cli._cli_session import cli_session
+from class_cli._colors import colors
+import class_cli._cli_prompt as cli_prompt
+import class_cli._cli_parser as cli_parser
+import class_cli._cli_methods as cli_methods
+import class_cli._cli_logger as cli_logger
+from class_cli._cli_session import cli_session
 
 class CLI():
     """

@@ -3,9 +3,9 @@ import prompt_toolkit as prompt
 import traceback
 import sys
 
-from cli._colors import colors
-import cli._cli_prompt as cli_prompt
-import cli._cli_parser as cli_parser
+from class_cli._colors import colors
+import class_cli._cli_prompt as cli_prompt
+import class_cli._cli_parser as cli_parser
 
 class cli_session:
 

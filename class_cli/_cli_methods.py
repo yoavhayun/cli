@@ -8,7 +8,7 @@ Email: YoavHayun@gmail.com
 from collections import OrderedDict
 from enum import Enum
 import inspect
-import cli._cli_parser as cli_parser
+import class_cli._cli_parser as cli_parser
 
 class Method:
     """

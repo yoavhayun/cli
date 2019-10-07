@@ -7,7 +7,7 @@ Email: YoavHayun@gmail.com
 
 import argparse, inspect
 
-import cli._cli_prompt as cli_prompt
+import class_cli._cli_prompt as cli_prompt
 
 DOC_SEP = '========================='
 

@@ -6,7 +6,7 @@ Email: YoavHayun@gmail.com
 """
 
 import logging
-from cli._colors import colors
+from class_cli._colors import colors
 
 class CLI_Logger():
     """
