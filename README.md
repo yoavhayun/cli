@@ -55,7 +55,7 @@ Basic Example:
     This is a simple code that controls an integer via the Setting decorator
     It can only set/return it's value or add another integer to it.
 
-                from cli.cli import CLI
+                from class_cli.cli import CLI
 
                 cli = CLI()
 
