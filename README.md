@@ -7,6 +7,7 @@ Using the module encourages for well documented code while not demanding it.
 It allows for separation in implementation between method execution and it's argument validations.
 
 The CLI has the following capabilities:
+
     * Full command and argument auto-completion and suggestions
     * Basic type validation for entered arguments while typing
     * Full input line validation
@@ -16,7 +17,9 @@ The CLI has the following capabilities:
     * Execution of commands from a text file, line by line
 
 The module exposes an API in the form of decorators. These are the available decorators:
-    Program(name=None, version=None, description=None, log=None, style:dict=None, debug:bool=False)
+
+   Program(name=None, version=None, description=None, log=None, style:dict=None, debug:bool=False)
+   
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
         It also exposes the CLI interface with an added attribute named 'CLI'
@@ -29,17 +32,20 @@ The module exposes an API in the form of decorators. These are the available dec
         @debug          A boolean that defines if CLI method calling information should be logged   (Default is False)
 
 
-    Operation
+   Operation
+   
         a method decorator that defines the execution code of a method in the CLI
 
-    Setting(initial_value, updates_value:bool=True)
+   Setting(initial_value, updates_value:bool=True)
+   
         a method decorator that creates a setting value for the CLI with name equals to the method name.
         It defines the execution code for setting the value into the created setting.
 
         @initial_value      An initial value that the setting will hold after class initialization
         @updates_value      Whether or not calling this method automatically updates the inner setting value
 
-    Validation
+   Validation
+   
         A method decorator that defines a validation to be performed on an execution (Operation / Setting)
         Holds the same signature as the execution it is validating and raises an exception for invalid arguments.
         * An Operation or a Setting can have multiple Validations
