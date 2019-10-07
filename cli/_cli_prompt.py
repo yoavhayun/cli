@@ -52,7 +52,7 @@ def split_input(line):
     """
     Splits an input line given by the user into it's components
     """
-    input = shlex.split(line, posix=(platform.system()!='Windows'))
+    input = shlex.split(line, posix=False)
 
     return [remove_quotes(part) for part in input if part!='']
 
@@ -82,12 +82,12 @@ def extract_details(doc):
     """
     _quote = False
     try:
-        _input = shlex.split(doc.current_line, posix=(platform.system()!='Windows'))
+        _input = shlex.split(doc.current_line, posix=False)
     except:
         try:
-            _input = shlex.split(doc.current_line + '"', posix=(platform.system()!='Windows'))
+            _input = shlex.split(doc.current_line + '"', posix=False)
         except:
-            _input = shlex.split(doc.current_line + "'", posix=(platform.system()!='Windows'))
+            _input = shlex.split(doc.current_line + "'", posix=False)
         finally:
             _quote = True
 
@@ -150,7 +150,7 @@ class StatusBar(prompt.validation.Validator):
         Main method for controling the status bar
         """
         try:
-            shlex.split(document.current_line, posix=(platform.system()!='Windows'))
+            shlex.split(document.current_line, posix=False)
         except:
             raise prompt.validation.ValidationError(message="Missing closing quotation")
 
