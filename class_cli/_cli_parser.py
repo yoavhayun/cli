@@ -6,6 +6,7 @@ Email: YoavHayun@gmail.com
 """
 
 import argparse, inspect
+from collections.abc import Iterable
 
 import class_cli._cli_prompt as cli_prompt
 
@@ -50,40 +51,43 @@ def _fixType(_type):
     Converts an enumerable type into a relevant callable
     """
 
-    class DictOptions:
-        def __init__(self, options={}):
-            self.options = options
+    if isinstance(_type, Iterable):
+        class DictOptions:
+            def __init__(self, options={}):
+                self.options = options
+                self.converts = {str(o): o for o in options}
 
-        def __call__(self, str):
-            if str not in self.options:
-                raise Exception("'{}' is not a valid option".format(str))
-            return self.options[str]
-        
-        def __complete__(self, str):
-            return [k for k in self.options.keys() if k.lower().startswith(str.lower())]
-        
-        def __str__(self):
-            return ', '.join(self.options.keys())
+            def __call__(self, key):
+                if key not in [str(o) for o in self.options]:
+                    raise Exception("'{}' is not a valid option".format(key))
+                return self.options[self.converts[key]]
+            
+            def __complete__(self, key):
+                return [str(k) for k in self.options.keys() if str(k).lower().startswith(key.lower())]
+            
+            def __str__(self):
+                return ', '.join([str(k) for k in self.options.keys()])
 
-    class ListOptions:
-        def __init__(self, options=[]):
-            self.options = options
+        class ListOptions:
+            def __init__(self, options=[]):
+                self.options = options
+                self.converts = {str(o): o for o in options}
 
-        def __call__(self, str):
-            if str not in self.options:
-                raise Exception("'{}' is not a valid option".format(str))
-            return str
-        
-        def __complete__(self, str):
-            return [k for k in self.options if k.lower().startswith(str.lower())]
-        
-        def __str__(self):
-            return ', '.join(self.options)
+            def __call__(self, key):
+                if key not in [str(o) for o in self.options]:
+                    raise Exception("'{}' is not a valid option".format(key))
+                return self.converts[key]
+            
+            def __complete__(self, key):
+                return [str(k) for k in self.options if str(k).lower().startswith(key.lower())]
+            
+            def __str__(self):
+                return ', '.join([str(opt) for opt in self.options])
 
-    if type(_type) is dict:
-        _type = DictOptions(_type)
-    elif type(_type) in [list, set, type({}.keys())]:
-        _type = ListOptions(_type)
+        if type(_type) is dict:
+            _type = DictOptions(_type)
+        elif type(_type) in [list, set, type({}.keys()), type(range(0))]:
+            _type = ListOptions(_type)
 
     return _type
 
