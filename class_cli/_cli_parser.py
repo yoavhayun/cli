@@ -62,7 +62,6 @@ def _wrap_iterable_types(_type):
 class ListOptions:
     def __init__(self, options):
         self.options = options
-        self.converts = {str(o): o for o in options}
 
     def __call__(self, key):
         if key not in [str(o) for o in self.options]:
@@ -75,13 +74,18 @@ class ListOptions:
     def __str__(self):
         return ', '.join([str(o) for o in self.options])
 
+    def find(self, key):
+        for option in self.options:
+            if str(option) == key:
+                return option
+
     def __getitem__(self, key):
-        return self.converts[key]
+        return self.find(key)
 
 class DictOptions(ListOptions):
 
     def __getitem__(self, key):
-        return self.options[self.converts[key]]
+        return self.options[self.find(key)]
 
 
 def add_method_inspection(method):
@@ -200,6 +204,6 @@ def create_parser(name, methods, settings):
     # Defines a parser for read command to read commands from a file
     for read_key in cli_prompt.CMD.READ:
         read_parser = method_parsers.add_parser(read_key, formatter_class=argparse.RawTextHelpFormatter)
-        read_parser.add_argument("filepath", help="Path to a file.\n\tuse quotation to enable path autocompletion")
+        read_parser.add_argument("filepath", nargs='+', help="Path to a file.\n\tuse quotation to enable path autocompletion")
 
     return parser
