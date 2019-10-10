@@ -139,13 +139,13 @@ def _create_method_parser(parser, method):
     first = True
     for arg, type, default, doc in zip(args, types, defaults, docs):
         if first:
-            doc = "{}\n{}".format(DOC_SEP, doc)
+            doc = "{}\n{}".format(DOC_SEP, doc if len(doc) > 0 else "'{}' argument of method '{}'".format(arg, method.__name__))
             first = False
         if _started_defaults or default != cli_prompt.NO_DEFAULT:
-            parser.add_argument(arg, nargs='?', type=type, default=default, help="{} (default: {})\n{}".format(doc, default, DOC_SEP))
+            parser.add_argument(arg, nargs='?', type=type, default=default, help="{} (default: {})\nType:{}\n{}".format(doc, default, type, DOC_SEP))
             _started_defaults = True
         else:
-            parser.add_argument(arg, type=type, help="{}\n{}".format(doc, DOC_SEP))
+            parser.add_argument(arg, type=type, help="{}\nType: {}\n{}".format(doc, type, DOC_SEP))
     # Add *args and **kwargs support
     if method.__inspection__.varargs is not None:
         providedHelp = method.__inspection__.extra_docs[method.__inspection__.varargs] if method.__inspection__.varargs is not None else None
