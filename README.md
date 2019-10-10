@@ -86,23 +86,21 @@ In this example, we are wrapping a class, that holds a Setting named **value**, 
  
  In the main method we called **MyClass().CLI.main()** which checks for sys.argv for input and executes the commands using the instance.
 
-> $> **python3 MyClass.py show**
+> $> **python3 MyClass.py show**\
 > Current value is 'None'
  
  If we execute the script without arguments, it will open the CLI for user input:
 
-> $> **python3 MyClass.py**
+> $> **python3 MyClass.py**\
+>  **MyClass**\
+> &emsp;&emsp;&emsp;&emsp;To exit, enter one of the following ['q', 'quit', 'exit']\
+> &emsp;&emsp;&emsp;&emsp;to read commands from a file, enter one of the following ['.r', '.read']\
+>
+>&emsp;&emsp;&emsp;&emsp;**Tip: At any time, add '-h' flag to the command for help.**\
 >\
->  **MyClass**
-> &emsp;&emsp;&emsp;&emsp;To exit, enter one of the following ['q', 'quit', 'exit']
-> &emsp;&emsp;&emsp;&emsp;to read commands from a file, enter one of the following ['.r', '.read']
->\
->&emsp;&emsp;&emsp;&emsp;**Tip: At any time, add '-h' flag to the command for help.**
->\
->\
-> **MyClass>** show
+> **MyClass>** show\
 > Current value is 'None'
-> \
+> 
 > **MyClass>** |
 
  You can also open the CLI directly by calling **run** instead of **main**
@@ -121,14 +119,14 @@ Logging
         self.CLI.log.error("This is an Error")
         self.CLI.log.debug("This line is shown only when Program decorator is called with 'debug=True'"")
         
-> **MyClass>** method
-> This is an information Line
-> [WARNING] This is a Warning
-> `2019-10-10 17:51:21,807`
-> `[ERROR] This is an Error`
-> 2019-10-10 17:55:21,308
-> [DEBUG][test:12] This line is shown only when Program decorator is called with 'debug=True' 
->\
+> **MyClass>** method\
+> This is an information Line\
+> [WARNING] This is a Warning\
+> `2019-10-10 17:51:21,807`\
+> `[ERROR] This is an Error`\
+> 2019-10-10 17:51:21,808\
+> [DEBUG][test:12] This line is shown only when Program decorator is called with 'debug=True'
+>
 > **MyClass>** |
 
 You can see documentation for the Logger object [here](https://docs.python.org/3/library/logging.html)
@@ -147,17 +145,16 @@ Using it alone will display a usage message for the entire program while adding 
         """
         pass
 
-> **CLI>** method -h
+> **CLI>** method -h\
 >usage: CLI method [-h]
->\
-> =========================
+>
+> =========================\
 > A description of the method
->\
-> =========================
->\
-> optional arguments:
->   -h, --help  show this help message and exit
->\
+>
+> =========================\
+> optional arguments:\
+>   -h, --help  show this help message and exit\
+>
 > **CLI>**|
 
 Any Validations for the method will be added to the description
@@ -170,18 +167,17 @@ Any Validations for the method will be added to the description
         if self.disabled:
             raise Exception("Cannot perform operations when disabled")
 
-> **CLI>** method -h
+> **CLI>** method -h\
 >usage: CLI method [-h]
->\
-> =========================
-> A description of the method
->\
-> \* cannot perform operation when disabled
-> =========================
->\
-> optional arguments:
->   -h, --help  show this help message and exit
->\
+>
+> =========================\
+> A description of the method\
+> \* cannot perform operation when disabled\
+> \=========================
+>
+> optional arguments:\
+>   -h, --help  show this help message and exit\
+>
 > **CLI>**|
 
 If there are arguments for the method, you can add descriptions for them inside the method documentation with a **@** prefix as demonstrated below.
@@ -197,29 +193,32 @@ If there are arguments for the method, you can add descriptions for them inside 
         """
         pass
 
-> **CLI>** method -h
+> **CLI>** method -h\
 > usage: CLI method [-h] arg
->\
-> =========================
+>
+>=========================\
 > A description of the method
->\
-> Accepts:
->&emsp;&emsp;@arg    arg description
+>
+> Accepts:\
+>&emsp;&emsp;@arg    arg description\
 >&emsp;&emsp;@arg    another line of the description
->\
+>
 >&emsp;&emsp;* cannot perform operation when disabled
-> =========================
->\
-> positional arguments:
->&emsp;arg&emsp;&emsp;&emsp;&emsp;=========================
->&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;arg description
->&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;another line of the description
+>
+> =========================\
+> positional arguments:\
+>&emsp;arg&emsp;&emsp;&emsp;&emsp;
+>
+>=========================\
+>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;arg description\
+>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;another line of the description\
 >&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;Type: <class 'str'>
->&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;=========================
->\
-> optional arguments:
+>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;
+>
+> =========================\
+> optional arguments:\
 >   -h, --help  show this help message and exit
->\
+>
 > **CLI>**|
 
 ******************
@@ -238,9 +237,9 @@ Since the user input is a String, by default the arguments passed to a method ar
     def method(self, arg):
         print(type(arg), ';', arg)
 
->    **CLI>** method value
+>    **CLI>** method value\
 >    <class 'str'> ; value
->\
+>
 >    **CLI>**|
 
 **Basic Annotation**:
@@ -251,9 +250,9 @@ The CLI accepts annotations which are a Python Callable that receive a String an
     def method(self, arg:int):
         print(type(arg), ';', arg)
 
->    **CLI>** method 17
+>    **CLI>** method 17\
 >    <class 'int'> ; 17
->\
+>
 >    **CLI>**|
 
 **Iterable Annotation**:
@@ -264,15 +263,15 @@ You can also use an Iterable as an annotation to specify a set of options.
         print(type(value), ';', value)
 
 
->    **CLI>** method 1
+>    **CLI>** method 1\
 >    <class 'int'> ; 1
->\
->    **CLI>** method value
+>
+>    **CLI>** method value\
 >    <class 'str'> ; value
->\
->    **CLI>** method '(0, 0)'
+>
+>    **CLI>** method '(0, 0)'\
 >    <class 'tuple'> ; (0, 0)
->\
+>
 >    **CLI>**|
     
 * *Since the string representation of the items in the List are used to select the value from it, The String representations of the Items need to be unique.*
@@ -283,10 +282,10 @@ During typing of input, The CLI will tip the user for the expected inputs, as we
     @cli.Operation
     def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
         pass
->**CLI>** method value number|
+>**CLI>** method value number|\
 >\
 >\
->    `invalid literal for int() with base 10: 'number'`
+>    `invalid literal for int() with base 10: 'number'`\
 >    arg1 **arg2[=0]** arg3[=None] {*extras}  :  **{<class 'int'>}**
 
 ******************
@@ -304,28 +303,28 @@ The CLI can auto-complete command names, file paths and argument values.
         return arg1
 
 Pressing 'TAB' will open up all available suggestions
->    **CLI>** | 
-> &emsp;&emsp;&ensp;&nbsp;| method |
-> &emsp;&emsp;&ensp;&nbsp;| .setting |    
-> &emsp;&emsp;&ensp;&nbsp;| &ensp;.read&ensp; |  
+>    **CLI>** |\
+> &emsp;&emsp;&ensp;| method |\
+> &emsp;&emsp;&ensp;| .setting&nbsp; |\
+> &emsp;&emsp;&ensp;| &ensp;.read&ensp;&nbsp; |  
 
->    **CLI>** .setting | 
-> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;| name |
+>    **CLI>** .setting |\
+> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;| name |
 
 When browsing suggestions, you can see the expected arguments at the bottom:
 
->    **CLI>** method| 
-> &emsp;&emsp;&ensp;&nbsp;**| method |**
-> &emsp;&emsp;&ensp;&nbsp;| &ensp;.setting&nbsp; |    
-> &emsp;&emsp;&ensp;&nbsp;| &emsp;.read&ensp;&nbsp; |
+>    **CLI>** method|\
+> &emsp;&emsp;&ensp;**| method |**\
+> &emsp;&emsp;&ensp;| &ensp;.setting&nbsp; |\
+> &emsp;&emsp;&ensp;| &emsp;.read&ensp;&nbsp; |\
 >\
 > **arg1 arg2[=0] arg3[=None] {\*extras}**
 
 When the expected argument is an Iterable, the CLI will suggest all the Iterable items
 
->    **CLI>** method value 0 | 
-> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;| &nbsp;1 |
-> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;| -1 |  
+>    **CLI>** method value 0 |\
+> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;| &nbsp;1 |\
+> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;| -1 |\
 >\
 >   arg1 arg2[=0] **arg3[=None]** {*extras}  :  **{1, -1}**
 
@@ -430,26 +429,26 @@ When calling the script with arguments, it will execute them and exit. If not ar
 
 This provides the following cli behavior::
 
-> **IntegerController>** .setting value
+> **IntegerController>** .setting value\
 >    =None
->\
->    **IntegerController>** add 2
->    `2019-08-24 17:12:18,759`
+>
+>    **IntegerController>** add 2\
+>    `2019-08-24 17:12:18,759`\
 >    `[ERROR] Must initialize setting 'value' before performing operations`
->\
->    **IntegerController>** .setting value 5
+>
+>    **IntegerController>** .setting value 5\
 >    =5
->\
->    **IntegerController>** add 2
+>
+>    **IntegerController>** add 2\
 >   7
->\
->   **IntegerController>** add 0
->   `2019-08-24 17:12:19,800`
+>
+>   **IntegerController>** add 0\
+>   `2019-08-24 17:12:19,800`\
 >   `[ERROR] Adding 0 will do nothing to the Integer`
->\
->   **IntegerController>** .setting value
+>
+>   **IntegerController>** .setting value\
 >   =7
->\
+>
 >   **IntegerController>**|
 
 Initially the value was None, so trying to add 2 to it returned an error. After changing it to a valid value (5), adding 2 was possible. Trying to add 0 also throws exceptions so the ending value was 7.
@@ -465,13 +464,13 @@ This could be solved by changing the main a bit and calling the method to set th
 
 That has the following interface behavior::
 
->    **IntegerController>** .setting value
+>    **IntegerController>** .setting value\
 >    =0
->\
->    **IntegerController>** add 2
+>
+>    **IntegerController>** add 2\
 >    2
->\
->    **IntegerController>** .setting value
+>
+>    **IntegerController>** .setting value\
 >    =2
->\
+>
 >    **IntegerController>**|
