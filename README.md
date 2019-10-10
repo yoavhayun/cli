@@ -207,15 +207,11 @@ If there are arguments for the method, you can add descriptions for them inside 
 >
 > =========================\
 > positional arguments:\
->&emsp;arg&emsp;&emsp;&emsp;&emsp;
->
->=========================\
+>&emsp;arg&emsp;&emsp;&emsp;&emsp;=========================\
 >&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;arg description\
 >&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;another line of the description\
->&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;Type: <class 'str'>
->&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;
->
-> =========================\
+>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;Type: <class 'str'>\
+>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;=========================\
 > optional arguments:\
 >   -h, --help  show this help message and exit
 >
