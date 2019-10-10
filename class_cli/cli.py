@@ -13,7 +13,7 @@ The CLI has the following capabilities:
     * Execution of commands from a text file, line by line
 
 The module exposes an API in the form of decorators. These are the available decorators:
-    Program(name=None, version=None, description=None, log=None, style:dict=None, debug:bool=False)
+    Program(name=None, version=None, description=None, log=None, style=None, debug=False)
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
         It also exposes the CLI interface with an added attribute named 'CLI'
@@ -287,7 +287,7 @@ class CLI():
         Method Decorator
         Records a funcion as a CLI operation
         """
-        self.methods_dict[func.__name__].setExecution(func)
+        self.methods_dict[func.__name__].setExecution(func, "Operation")
         return self._redirection(func)
     
     def Setting(self, initial_value, updatesValue:bool=True):
@@ -306,7 +306,7 @@ class CLI():
                 if updatesValue:
                     self._settings[func.__name__] = res
                 return res
-            self.methods_dict[func.__name__].setExecution(wrapped)
+            self.methods_dict[func.__name__].setExecution(wrapped, "Setting")
             return self._redirection(wrapped)
         return wrapper
 
@@ -320,7 +320,7 @@ class CLI():
         self.methods_dict[func.__name__].addValidation(func)
         return self._redirection(func)
 
-    def Program(self, name=None, version=None, description=None, log=None, style:dict=None, debug:bool=False):
+    def Program(self, name=None, version=None, description=None, log=None, style=None, debug=False):
         """
         Class Decorator
         Defines the CLI Program using a class
