@@ -46,50 +46,42 @@ class copy_argspec(object):
             doc = '\n'.join([line[indent:] for line in lines])
         return doc
 
-def _fixType(_type):
+def _wrap_iterable_types(_type):
     """
     Converts an enumerable type into a relevant callable
     """
 
     if isinstance(_type, Iterable):
-        class DictOptions:
-            def __init__(self, options={}):
-                self.options = options
-                self.converts = {str(o): o for o in options}
-
-            def __call__(self, key):
-                if key not in [str(o) for o in self.options]:
-                    raise Exception("'{}' is not a valid option".format(key))
-                return self.options[self.converts[key]]
-            
-            def __complete__(self, key):
-                return [str(k) for k in self.options.keys() if str(k).lower().startswith(key.lower())]
-            
-            def __str__(self):
-                return ', '.join([str(k) for k in self.options.keys()])
-
-        class ListOptions:
-            def __init__(self, options=[]):
-                self.options = options
-                self.converts = {str(o): o for o in options}
-
-            def __call__(self, key):
-                if key not in [str(o) for o in self.options]:
-                    raise Exception("'{}' is not a valid option".format(key))
-                return self.converts[key]
-            
-            def __complete__(self, key):
-                return [str(k) for k in self.options if str(k).lower().startswith(key.lower())]
-            
-            def __str__(self):
-                return ', '.join([str(opt) for opt in self.options])
-
         if type(_type) is dict:
             _type = DictOptions(_type)
-        elif type(_type) in [list, set, type({}.keys()), type(range(0))]:
+        else:
             _type = ListOptions(_type)
 
     return _type
+
+class ListOptions:
+    def __init__(self, options):
+        self.options = options
+        self.converts = {str(o): o for o in options}
+
+    def __call__(self, key):
+        if key not in [str(o) for o in self.options]:
+            raise Exception("'{}' is not a valid option".format(key))
+        return self[key]
+    
+    def __complete__(self, key):
+        return [str(o) for o in self.options if str(o).lower().startswith(key.lower())]
+    
+    def __str__(self):
+        return ', '.join([str(o) for o in self.options])
+
+    def __getitem__(self, key):
+        return self.converts[key]
+
+class DictOptions(ListOptions):
+
+    def __getitem__(self, key):
+        return self.options[self.converts[key]]
 
 
 def add_method_inspection(method):
@@ -109,7 +101,7 @@ def add_method_inspection(method):
         method.__inspection__.defaults = [cli_prompt.NO_DEFAULT() for i in range(len(ins.args))]
 
     # add type convertions
-    method.__inspection__.__setattr__("types", [_fixType(ins.annotations[arg]) if arg in ins.annotations else str for arg in ins.args])
+    method.__inspection__.__setattr__("types", [_wrap_iterable_types(ins.annotations[arg]) if arg in ins.annotations else str for arg in ins.args])
 
     # format documentation
     method.__inspection__.__setattr__("docs", ["" for i in range(len(ins.args))])
