@@ -5,6 +5,7 @@ Author: Hayun, Yoav
 Email: YoavHayun@gmail.com
 """
 
+import os
 import shlex, platform, enum
 import prompt_toolkit as prompt
 from class_cli._colors import colors
@@ -158,13 +159,17 @@ class StatusBar(prompt.validation.Validator):
         idx = len(_input) - 1
 
         if _keyword in CMD.READ:
-            if len(_input) > 2 and not(len(_input) == 3 and _word==""):
-
-                raise prompt.validation.ValidationError(message="Reading from a file accepts only 1 file. (if the path contains spaces, wrap with quotations)")
+            msg = [(self.StyleType if idx == 0 else self.StyleSelected, 'File Path')]
+            self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
+            filepath = ' '.join(_input[1:]).strip()
+            if len(filepath) > 0 and not os.path.isfile(filepath):
+                raise prompt.validation.ValidationError(message="'{}' is not a file".format(filepath))
         # Handle Setting input
         if _keyword in CMD.SETTING:
             _input = _input[1:]
             _keyword = _input[0] if len(_input) else ""
+            msg = [(self.StyleType if idx == 0 else self.StyleSelected, 'Setting Name :  {' + ', '.join(self.settings) + '}' )]
+            self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
             idx -= 1
         # Handle Operation input
         if _keyword in self.methods:
@@ -217,6 +222,7 @@ class StatusBar(prompt.validation.Validator):
                     self.reset()
                     raise prompt.validation.ValidationError(message="Too many inputs for operation '{}'".format(_keyword))
 
+            # Format Arguments Message
             try:
                 len_normal_args = len(args) - sum([1 for extra in [ins.varargs, ins.varkw] if extra is not None])
                 if idx < len(args):
@@ -307,7 +313,7 @@ class CustomCompleter(prompt.completion.Completer):
 
         # Complete for the very first word given 
         elif _keyword == "" or _keyword == _word:
-            options = [k for k in self.methods.keys() if k not in self.settings] + [CMD.SETTING[-1], CMD.READ[-1]]
+            options = [k for k in self.methods.keys() if k not in self.settings] + ([CMD.SETTING[-1], CMD.READ[-1]] if len(self.settings) > 0 else [CMD.READ[-1]])
         
         # Complete for current argument
         elif _keyword in self.methods:

@@ -72,7 +72,7 @@ class cli_session:
             # Handle read commands from a file
             if _input[0] in cli_prompt.CMD.READ and not self.isFile:
                 finish = False
-                filepath = _input[1]
+                filepath = ' '.join(_input[1:])
                 if os.path.isfile(filepath):
                     try:
                         self.isFile = True
