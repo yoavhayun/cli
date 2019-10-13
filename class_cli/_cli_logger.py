@@ -12,13 +12,15 @@ class CLI_Logger():
     """
     A class for logging and printing messages and errors
     """
-
+    ACTIVE_HANDLERS = []
     DEFAULT_FORMAT = logging.Formatter("%(msg)s")
 
-    def __init__(self, name, logLevel=logging.INFO):
-        self._log = logging.getLogger(name)
+    def __init__(self, filepath=None, logLevel=logging.INFO):
+        self.handler_stdout = None
+        self.handler_file = None
+
+        self._log = logging.getLogger(filepath)
         self._log.setLevel(logLevel)
-        self._log
 
         # Define the styling of the logger
         self._styles = {}
@@ -28,22 +30,48 @@ class CLI_Logger():
         self._styles[logging.DEBUG]   = "%(asctime)s\n[DEBUG][%(module)s:%(lineno)d] %(msg)s"
 
         # Register stdout handler
-        handler_stdout = logging.StreamHandler()
-        handler_stdout.setLevel(logLevel)
-        handler_stdout.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles, {
+        self.handler_stdout = logging.StreamHandler()
+        self.handler_stdout.setLevel(logLevel)
+        self.handler_stdout.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles, {
                 logging.INFO : colors.bold,
                 logging.WARNING : colors.fg.yellow,
                 logging.ERROR : colors.fg.red,
                 logging.DEBUG : colors.fg.darkgrey
             })))
-        logging.root.addHandler(handler_stdout)
 
         # Register log file handler
-        if name is not None:
-            handler_file = logging.FileHandler(name)
-            handler_file.setLevel(logging.DEBUG)
-            handler_file.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles)))
-            logging.root.addHandler(handler_file)
+        if filepath is not None:
+            self.handler_file = logging.FileHandler(filepath)
+            self.handler_file.setLevel(logging.DEBUG)
+            self.handler_file.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles)))
+
+    def disable(self):
+        self._disable_logs()
+
+        if len(CLI_Logger.ACTIVE_HANDLERS) > 1 and self == CLI_Logger.ACTIVE_HANDLERS[-1]:
+            CLI_Logger.ACTIVE_HANDLERS[-2]._enable_logs()
+        
+        if self in CLI_Logger.ACTIVE_HANDLERS:
+            CLI_Logger.ACTIVE_HANDLERS.remove(self)
+
+
+    def _disable_logs(self):
+        logging.root.removeHandler(self.handler_stdout)
+        if self.handler_file is not None:
+            logging.root.removeHandler(self.handler_file)
+
+    def enable(self):
+        if len(CLI_Logger.ACTIVE_HANDLERS) > 0:
+            CLI_Logger.ACTIVE_HANDLERS[-1]._disable_logs()
+        CLI_Logger.ACTIVE_HANDLERS.append(self)
+        self._enable_logs()
+    
+    def _enable_logs(self):
+        logging.root.addHandler(self.handler_stdout)
+        if self.handler_file is not None:
+            logging.root.addHandler(self.handler_file)
+
+
 
     def _compile_styles(self, styles, modifiers={}):
         """

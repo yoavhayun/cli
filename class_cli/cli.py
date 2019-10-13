@@ -251,9 +251,11 @@ class CLI():
                 instance.CLI.log
         """
         def __init__(self, cli):
-            self.log = cli.logger
-
             self._cli = cli
+            self.__logger = cli.logger
+            self.log = self.__logger.get_logger()
+
+            self.name = self._cli.name
             self.__cli_session = self._cli._Compile()
 
         def main(self):
@@ -264,17 +266,17 @@ class CLI():
             """
             starts the CLI program
             """
+            self.__logger.enable()
             self.__cli_session.run(*args)
+            self.__logger.disable()
 
         def __getattribute__(self, name):
             """
             Accessing compiled settings and methods of the class instance
             order of access is Setting -> Methods -> CLI_Object attributes
             """
-            if name in object.__getattribute__(self, "_cli")._settings:
-                return object.__getattribute__(self, "_cli")._settings[name]
-            elif name in object.__getattribute__(self, "_cli")._methods:
-                return object.__getattribute__(self, "_cli")._methods[name]
+            if name in object.__getattribute__(self, "_cli").methods_dict.settings(object.__getattribute__(self, "_cli").instance):
+                return object.__getattribute__(self, "_cli").methods_dict.settings(object.__getattribute__(self, "_cli").instance)[name]
             else:
                 return object.__getattribute__(self, name)
 
@@ -290,7 +292,7 @@ class CLI():
         self.methods_dict[func.__name__].setExecution(func, "Operation")
         return self._redirection(func)
     
-    def Setting(self, initial_value, updatesValue:bool=True):
+    def Setting(self, initial_value, updates_value:bool=True):
         """
         Method Decorator
         Records a funcion as a CLI Setting
@@ -299,15 +301,10 @@ class CLI():
         To access the setting use : self.CLI.[setting]{=value}
         """
         def wrapper(func):
-            self._settings[func.__name__] = initial_value
-            @cli_parser.copy_argspec(func)
-            def wrapped(*args, **kwargs):
-                res = func(*args, **kwargs)
-                if updatesValue:
-                    self._settings[func.__name__] = res
-                return res
-            self.methods_dict[func.__name__].setExecution(wrapped, "Setting")
-            return self._redirection(wrapped)
+            self.methods_dict[func.__name__].setExecution(func, "Setting")
+            self.methods_dict[func.__name__].attributes["initial_value"] = initial_value
+            self.methods_dict[func.__name__].attributes["updates_value"] = updates_value
+            return self._redirection(func)
         return wrapper
 
     def Validation(self, func):
@@ -340,17 +337,11 @@ class CLI():
         # Defines access to the CLI instance
         parent = self
 
-        # Override default style
-        if style is not None:
-            for key in style:
-                self.style[key] = style[key]
-        self._style = prompt.styles.Style.from_dict(self.style)
-
         # Defines the behavior of the class outsite a CLI environment (As a class instance)
         def cli_decorator(cls):
             class Wrapper:
                 def __init__(self, *args, **kwargs):
-                    modifiers = {"name":name, "version":version, "description":description, "log":log, "debug" : debug}
+                    modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "debug" : debug}
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
                     # self.version = version
                     self.__name__ = type(self._cli.instance).__name__
@@ -370,7 +361,7 @@ class CLI():
                     try:
                         return object.__getattribute__(self, name)
                     except AttributeError as e:
-                        return object.__getattribute__(object.__getattribute__(self, "_cli").instance, name)
+                        return object.__getattribute__(self, "_cli").methods_dict.compiled(object.__getattribute__(self, "_cli").instance)[name]
 
             return Wrapper
         return cli_decorator
@@ -383,12 +374,6 @@ class CLI():
         self.wrapped = None
         # Saves all the different implementations of all the methods
         self.methods_dict = cli_methods.CLI_Methods()
-        # Saves all the setting values
-        self._settings = OrderedDict()
-        self._methods = OrderedDict()
-        self._cli_access = False
-        self._parser = None
-        self.description = None
 
         # Define the default style to be used
         self.style = {
@@ -402,24 +387,32 @@ class CLI():
         """
         Links the CLI to an instance of the wrapped class
         """
-        self.instance = cls(*args, **kwargs)
-        self.instance.__setattr__(CLI.CLI_ACCESS_KEY, wrapped)
-        self.wrapped = wrapped
-        self.name = type(self.instance).__name__ if modifiers["name"] is None else modifiers["name"]
-        self.version = modifiers["version"]
-        self._class = wrapped.__class__
-        self.description = "{}{}{}".format(self.name, 
-                                            ' v' + self.version if self.version else '', 
+        cli = CLI()
+        cli.methods_dict = self.methods_dict
+        
+        cli.instance = cls(*args, **kwargs)
+        cli.instance.__setattr__(CLI.CLI_ACCESS_KEY, wrapped)
+        cli.wrapped = wrapped
+        cli.name = type(cli.instance).__name__ if modifiers["name"] is None else modifiers["name"]
+        cli.version = modifiers["version"]
+        cli._class = wrapped.__class__
+        cli.description = "{}{}{}".format(cli.name, 
+                                            ' v' + cli.version if cli.version else '', 
                                             ': ' + modifiers["description"] if modifiers["description"] else '')
-        self.logger = cli_logger.CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO).get_logger()
-        return self
+        cli.logger = cli_logger.CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO)
+        
+        if modifiers["style"] is not None:
+            for key in modifiers["style"]:
+                cli.style[key] = modifiers["style"][key]
+
+        return cli
 
     def _redirection(self, func):
         """
         funcion Decorator to redirect the execution to it's compiled one
         """
         def redirected(*args, **kwargs):
-            return self._methods[func.__name__](*(args[1:]), **kwargs)
+            return self.methods_dict.compiled(args[0])[func.__name__](*(args[1:]), **kwargs)
         
         return cli_parser.copy_argspec(func)(redirected)
 
@@ -428,8 +421,11 @@ class CLI():
         Compiles the class as a CLI
         """
 
-        for method in self.methods_dict:
-            self._methods[method] = cli_parser.add_method_inspection(self.methods_dict[method]._compile(self.instance))
+                # Override default style
 
-        self._parser = cli_parser.create_parser(self.name, self._methods, self._settings)
-        return cli_session(self.name, self.description, self.instance, self._methods, self._settings, self._parser, self._style)
+        self.methods_dict._compile(self.instance)
+        _methods = self.methods_dict.compiled(self.instance)
+        _settings = self.methods_dict.settings(self.instance)
+        _parser = cli_parser.create_parser(self.name, _methods, _settings)
+        _style = prompt.styles.Style.from_dict(self.style)
+        return cli_session(self.name, self.description, self.instance, _methods, _settings, _parser, _style)

@@ -5,7 +5,7 @@ Author: Hayun, Yoav
 Email: YoavHayun@gmail.com
 """
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from enum import Enum
 import inspect
 import class_cli._cli_parser as cli_parser
@@ -19,6 +19,7 @@ class Method:
         self.__name__ = name
         self._execution = None
         self._validations = []
+        self.attributes = {}
     
     def __str__(self):
         return "{}({}): {}".format(self.__name__, len(self._validations), list(self._executions.keys()))
@@ -124,9 +125,46 @@ class CLI_Methods(OrderedDict):
 
     def __init__(self, value=None):
         self.value = None
+        self._complied_methods = defaultdict(OrderedDict)
+        self._wrapped_methods = defaultdict(OrderedDict)
+        self._settings = defaultdict(OrderedDict)
+
 
     def __getitem__(self, item):
         if item not in self:
             self[item] = Method(item)
         
         return super(OrderedDict, self).__getitem__(item)
+
+    def compiled(self, instance):
+        return self._wrapped_methods[instance]
+
+    def settings(self, instance):
+        return self._settings[instance]
+
+    def _compile(self, instance):
+        for method in self:
+            self._complied_methods[instance][method] = cli_parser.add_method_inspection(self[method]._compile(instance))
+
+            # Handle Settings
+            if self[method]._type == "Setting":
+                self._settings[instance][method] = self[method].attributes["initial_value"]
+                def wrapper():
+                    _method = method[:]
+                    @cli_parser.copy_argspec(self._complied_methods[instance][_method])
+                    def setting(*args, **kwargs):
+                        res = self._complied_methods[instance][_method](*args, **kwargs)
+                        if self[_method].attributes["updates_value"]:
+                            self._settings[instance][_method] = res
+                        return res
+                    return setting
+                self._wrapped_methods[instance][method] = wrapper()
+            # Handle Operations
+            else:
+                def wrapper():
+                    _method = method[:]
+                    @cli_parser.copy_argspec(self._complied_methods[instance][_method])
+                    def operation(*args, **kwargs):
+                        return self._complied_methods[instance][_method](*args, **kwargs)
+                    return operation
+                self._wrapped_methods[instance][method] = wrapper()
