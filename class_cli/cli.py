@@ -396,9 +396,12 @@ class CLI():
         cli.name = type(cli.instance).__name__ if modifiers["name"] is None else modifiers["name"]
         cli.version = modifiers["version"]
         cli._class = wrapped.__class__
-        cli.description = "{}{}{}".format(cli.name, 
+        cli.description = "{}{}:{}\n".format(cli.name, 
                                             ' v' + cli.version if cli.version else '', 
-                                            ': ' + modifiers["description"] if modifiers["description"] else '')
+                                            '\n' + cli_parser.copy_argspec._format_doc(modifiers["description"], '\t') if modifiers["description"] else \
+                                            ('\n' + cli_parser.copy_argspec._format_doc(cls.__doc__, '\t') if cls.__doc__ else '')
+                                                        
+                                            )
         cli.logger = cli_logger.CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO)
         
         if modifiers["style"] is not None:

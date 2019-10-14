@@ -109,7 +109,7 @@ class Method:
             method.__doc__ = "{} '{}'".format(self._type, self.__name__)
         for validation in self._validations:
             if validation.__doc__ is not None:
-                method.__doc__ += '\n' + '\n'.join(
+                method.__doc__ += '\n\n' + '\n'.join(
                     ['* ' + l for l in cli_parser.copy_argspec._format_doc(validation.__doc__).split('\n') if l != ""])
         method.__doc__ += '\n' + cli_parser.DOC_SEP
 

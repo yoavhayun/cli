@@ -187,13 +187,27 @@ class cli_session:
                 traceback.print_exc()
                 print(e)
 
+    def _format_command_options(self, commands):
+        return "'" + "' '".join([cmd for cmd in commands]) + "'"
+
     def getUsage(self):
-        return prompt.formatted_text.FormattedText([
+        prefix_usage = [
             (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.INPUT), '\n{}\n'.format(self.description)),
-            ("","\tTo exit, enter one of the following {}\n".format([cmd for cmd in cli_prompt.CMD.END])),
-            ("","\tto read commands from a file, enter one of the following {}\n".format([cmd for cmd in cli_prompt.CMD.READ])),
-            ("bold", "\n\tTip: At any time, add '-h' flag to the command for help.\n")
-        ])
+            ("","\tTo exit, enter one of the following: "),
+            ("bold", "{}\n".format(self._format_command_options(cli_prompt.CMD.END))),
+            ("","\tTo read commands from a file, enter one of the following: "),
+            ("bold", "{}\n".format(self._format_command_options(cli_prompt.CMD.READ))),
+        ]
+
+        dynamic_usage = []
+        if len(self._settings) > 0:
+            dynamic_usage.append(("", "\tTo access the program settings, enter one of the following: "))
+            dynamic_usage.append(("bold", "{}\n".format(self._format_command_options(cli_prompt.CMD.SETTING))))
+
+        suffix_usage = [
+            ("bold", "\n\tAt any time, add '-h' flag to the command for help.\n")
+        ]
+        return prompt.formatted_text.FormattedText(prefix_usage + dynamic_usage + suffix_usage)
 
     def printUsage(self):
         """

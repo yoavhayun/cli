@@ -34,16 +34,15 @@ class copy_argspec(object):
         return wrapped
     
     @staticmethod
-    def _format_doc(doc):
+    def _format_doc(doc, line_prefix='', line_suffix=''):
         if doc is not None:
             lines = doc.split('\n')
-            # remove all starting empty lines
-            while lines[0] == "":
+            while len(lines) > 0 and lines[0].strip() == '':
                 lines = lines[1:]
-            # find base indention based on the first line
-            indent =  lines[0].find(lines[0].strip()) if len(lines) else 0
-            # remove indent from all lines
-            doc = '\n'.join([line[indent:] for line in lines])
+            while len(lines) > 0 and lines[-1].strip() == '':
+                lines = lines[:-1]
+            sep = min([len(line) - len(line.lstrip()) for line in lines if line.strip() != '']) if len(lines) > 0 else 0
+            doc = '\n'.join([line_prefix + line[sep:] + line_suffix for line in lines])
         return doc
 
 def _wrap_iterable_types(_type):
