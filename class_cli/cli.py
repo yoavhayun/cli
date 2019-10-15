@@ -13,7 +13,7 @@ The CLI has the following capabilities:
     * Execution of commands from a text file, line by line
 
 The module exposes an API in the form of decorators. These are the available decorators:
-    Program(name=None, version=None, description=None, log=None, style=None, debug=False)
+    Program(name=None, version=None, description=None, log=None, style=None, verbosity=False)
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
         It also exposes the CLI interface with an added attribute named 'CLI'
@@ -23,7 +23,7 @@ The module exposes an API in the form of decorators. These are the available dec
         @description    The description of the CLI program.                                         (Default is the class documentation)
         @log            A path to a log file.                                                       (Default is no log file)
         @style          A dictionary that overrides the styling of the CLI for the given keys       (Keys: CLI.STYLE)
-        @debug          A boolean that defines if CLI method calling information should be logged   (Default is False)
+        @verbosity      The verbosity level of STDOUT logging. Pass None to silence                 (Default is logging.INFO)
 
 
     Operation
@@ -260,15 +260,16 @@ class CLI():
 
         def main(self):
             "A Default main execution of the CLI program"
-            self.run(*(sys.argv[1:]))
+            return self.run(*(sys.argv[1:]))
         
         def run(self, *args):
             """
             starts the CLI program
             """
             self.__logger.enable()
-            self.__cli_session.run(*args)
+            res = self.__cli_session.run(*args)
             self.__logger.disable()
+            return res
 
         def __getattribute__(self, name):
             """
@@ -317,7 +318,7 @@ class CLI():
         self.methods_dict[func.__name__].addValidation(func)
         return self._redirection(func)
 
-    def Program(self, name=None, version=None, description=None, log=None, style=None, debug=False):
+    def Program(self, name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO):
         """
         Class Decorator
         Defines the CLI Program using a class
@@ -328,7 +329,7 @@ class CLI():
             description     A textual description of the program
             style           Change the formatting style of the CLI components
                                Dict of { CLI.STYLE.[component].value : [Format Description] }
-            debug           Whether to run the cli in DEBUG mode (default: False)
+            verbosity       The logger verbosity for STDOUT (default: logging.INFO)
 
         Returns:
             A class decorator
@@ -341,13 +342,16 @@ class CLI():
         def cli_decorator(cls):
             class Wrapper:
                 def __init__(self, *args, **kwargs):
-                    modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "debug" : debug}
+                    modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "verbosity" : verbosity}
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
                     # self.version = version
                     self.__name__ = type(self._cli.instance).__name__
                     self.__class__.__name__ = type(self._cli.instance).__name__
                     
                     self._cli.instance.CLI = CLI.CLI_Object(self._cli)
+
+                def __str__(self):
+                    return str(self._cli.instance)
 
                 def __getattribute__(self, name):
                     """
@@ -361,7 +365,10 @@ class CLI():
                     try:
                         return object.__getattribute__(self, name)
                     except AttributeError as e:
-                        return object.__getattribute__(self, "_cli").methods_dict.compiled(object.__getattribute__(self, "_cli").instance)[name]
+                        try:
+                            return object.__getattribute__(self, "_cli").methods_dict.compiled(object.__getattribute__(self, "_cli").instance)[name]
+                        except KeyError as e:
+                            return object.__getattribute__(object.__getattribute__(self, "_cli").instance, name)
 
             return Wrapper
         return cli_decorator
@@ -402,7 +409,7 @@ class CLI():
                                             ('\n' + cli_parser.copy_argspec._format_doc(cls.__doc__, '\t') if cls.__doc__ else '')
                                                         
                                             )
-        cli.logger = cli_logger.CLI_Logger(modifiers["log"], logging.DEBUG if modifiers["debug"] else logging.INFO)
+        cli.logger = cli_logger.CLI_Logger(modifiers["log"], modifiers["verbosity"])
         
         if modifiers["style"] is not None:
             for key in modifiers["style"]:

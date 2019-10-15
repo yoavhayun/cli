@@ -20,7 +20,8 @@ class CLI_Logger():
         self.handler_file = None
 
         self._log = logging.getLogger(filepath)
-        self._log.setLevel(logLevel)
+        if logLevel is not None:
+            self._log.setLevel(logLevel)
 
         # Define the styling of the logger
         self._styles = {}
@@ -30,14 +31,15 @@ class CLI_Logger():
         self._styles[logging.DEBUG]   = "%(asctime)s\n[DEBUG][%(module)s:%(lineno)d] %(msg)s"
 
         # Register stdout handler
-        self.handler_stdout = logging.StreamHandler()
-        self.handler_stdout.setLevel(logLevel)
-        self.handler_stdout.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles, {
-                logging.INFO : colors.bold,
-                logging.WARNING : colors.fg.yellow,
-                logging.ERROR : colors.fg.red,
-                logging.DEBUG : colors.fg.darkgrey
-            })))
+        if logLevel is not None:
+            self.handler_stdout = logging.StreamHandler()
+            self.handler_stdout.setLevel(logLevel)
+            self.handler_stdout.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles, {
+                    logging.INFO : colors.bold,
+                    logging.WARNING : colors.fg.yellow,
+                    logging.ERROR : colors.fg.red,
+                    logging.DEBUG : colors.fg.darkgrey
+                })))
 
         # Register log file handler
         if filepath is not None:
@@ -56,7 +58,8 @@ class CLI_Logger():
 
 
     def _disable_logs(self):
-        logging.root.removeHandler(self.handler_stdout)
+        if self.handler_stdout is not None:
+            logging.root.removeHandler(self.handler_stdout)
         if self.handler_file is not None:
             logging.root.removeHandler(self.handler_file)
 
@@ -67,7 +70,8 @@ class CLI_Logger():
         self._enable_logs()
     
     def _enable_logs(self):
-        logging.root.addHandler(self.handler_stdout)
+        if self.handler_stdout is not None:
+            logging.root.addHandler(self.handler_stdout)
         if self.handler_file is not None:
             logging.root.addHandler(self.handler_file)
 
