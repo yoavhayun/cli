@@ -18,14 +18,20 @@ class cli_session:
         self._style = style
         self._instance = instance
 
-        self._prompt = self._build_prompt()
+        try:
+            self._prompt = self._build_prompt().prompt
+        except prompt.output.win32.NoConsoleScreenBufferError:
+            self._prompt = input
         self.isFile = False
+
+        self._last_result = None
 
     def run(self, *args):
         if len(args) == 0:
             self.__shell()
         else:
             self.runArgs(args)
+            return self._last_result
 
     def runLine(self, line):
         """
@@ -47,6 +53,8 @@ class cli_session:
         """
         _input = args
         if len(_input) > 0:
+            self._last_result = None
+
             # Handle file comment commands
             if _input[0].startswith(cli_prompt.FILE_COMMENT):
                 toPrint = ' '.join(_input)[1:].strip()
@@ -104,6 +112,7 @@ class cli_session:
                     args += _args
 
                     res = self._methods[keyword](*args, **kwargs)
+                    self._last_result = res
                     if _input[0] in cli_prompt.CMD.SETTING:
                         print("={}".format(res))
                     elif res is not None:
@@ -129,7 +138,7 @@ class cli_session:
         except: pass
 
     def getPrompt(self, parent=[]):
-        return self._prompt
+        return self._prompt.prompt()
 
     def _build_prompt(self):
         """
@@ -147,6 +156,7 @@ class cli_session:
                                                 bottom_toolbar=status)
 
         _prompt_session._prompt = _prompt_session.prompt
+
         def wrappedPrompt():
             """
             resets the prompts displayed information
@@ -173,7 +183,7 @@ class cli_session:
             if inputLines is None:
                 print()
             try:
-                inputLine = inputLines.pop(0) if inputLines is not None else self.getPrompt().prompt()
+                inputLine = inputLines.pop(0) if inputLines is not None else self.getPrompt()
             except EOFError:
                 break
             try:
