@@ -121,7 +121,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, b): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on different names"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different names"): 
             Tester()
 
         cli = CLI()
@@ -131,7 +131,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self, *b): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on different *args names"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different *args names"): 
             Tester()
 
         cli = CLI()
@@ -141,7 +141,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self, **b): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on different **kwargs names"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different **kwargs names"): 
             Tester()
 
         cli = CLI()
@@ -151,7 +151,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on missing *args"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing *args"): 
             Tester()
 
         cli = CLI()
@@ -161,7 +161,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, *a): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on missing *args"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing *args"): 
             Tester()
 
         cli = CLI()
@@ -171,7 +171,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on missing **kwargs"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing **kwargs"): 
             Tester()
 
         cli = CLI()
@@ -181,7 +181,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, **a): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on missing **kwargs"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing **kwargs"): 
             Tester()
 
         cli = CLI()
@@ -191,7 +191,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, a=0): pass
             @cli.Operation()
             def oper(self, a): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on non matching default values"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on non matching default values"): 
             Tester()
 
         cli = CLI()
@@ -201,7 +201,7 @@ class TestCLI_Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, a=0): pass
-        with self.assertRaises(cli_exception.InitializationException, "Failed on non matching default values"): 
+        with self.assertRaises(cli_exception.InitializationException, None, "Failed on non matching default values"): 
             Tester()
 
     def test_constructor_accessability(self):
