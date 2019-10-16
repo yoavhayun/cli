@@ -251,7 +251,7 @@ class CLI():
                 instance.CLI.log
         """
         def __init__(self, cli):
-            self._cli = cli
+            self._cli = cli # must be the first line
             self.__logger = cli.logger
             self.log = self.__logger.get_logger()
 
@@ -309,6 +309,9 @@ class CLI():
 ############
 
     def __define_decorators(self):
+        """
+        Defines all the method decorators available
+        """
         self.Operation = cli_methods.OperationDecorator(self.methods_dict)
         self.Setting = cli_methods.SettingDecorator(self.methods_dict)
         self.Validation = cli_methods.ValidationDecorator(self.methods_dict)
@@ -385,6 +388,7 @@ class CLI():
             cli_prompt.STYLE.STATUSBAR.value   : '#000000 bg:#0000FF'
         }
 
+        # Expose decorators
         self.__define_decorators()
     
     def _link_to_instance(self, wrapped, cls, modifiers, *args, **kwargs):
@@ -402,8 +406,8 @@ class CLI():
         cli._class = wrapped.__class__
         cli.description = "{}{}:{}\n".format(cli.name, 
                                             ' v' + cli.version if cli.version else '', 
-                                            '\n' + cli_parser.copy_argspec._format_doc(modifiers["description"], '\t') if modifiers["description"] else \
-                                            ('\n' + cli_parser.copy_argspec._format_doc(cls.__doc__, '\t') if cls.__doc__ else '')
+                                            '\n' + cli_parser.copy_argspec.format_doc(modifiers["description"], '\t') if modifiers["description"] else \
+                                            ('\n' + cli_parser.copy_argspec.format_doc(cls.__doc__, '\t') if cls.__doc__ else '')
                                                         
                                             )
         cli.logger = cli_logger.CLI_Logger(modifiers["log"], modifiers["verbosity"])
@@ -414,23 +418,11 @@ class CLI():
 
         return cli
 
-    def _redirection(self, func):
-        """
-        funcion Decorator to redirect the execution to it's compiled one
-        """
-        def redirected(*args, **kwargs):
-            return self.methods_dict.compiled(args[0])[func.__name__](*(args[1:]), **kwargs)
-        
-        return cli_parser.copy_argspec(func)(redirected)
-
     def _Compile(self):
         """
         Compiles the class as a CLI
         """
-
-                # Override default style
-
-        self.methods_dict._compile(self.instance)
+        self.methods_dict.compile(self.instance)
         _methods = self.methods_dict.compiled(self.instance)
         _settings = self.methods_dict.settings(self.instance)
         _parser = cli_parser.create_parser(self.name, _methods, _settings)

@@ -1,3 +1,10 @@
+"""
+This module handles the prompt for the cli
+
+Author: Hayun, Yoav 
+Email: YoavHayun@gmail.com
+"""
+
 import os
 import prompt_toolkit as prompt
 import traceback
@@ -29,9 +36,15 @@ class cli_session:
         self._last_result = None
 
     def isSilent(self):
+        """
+        Returns whether the session prints to stdout
+        """
         return self._silent
     
     def setSilent(self, silent=True):
+        """
+        Sets whether the session prints to stdout
+        """
         self._silent = silent
 
     def run(self, *args):
@@ -111,7 +124,7 @@ class cli_session:
                 return finish
             
             keyword = _input[1] if _input[0] in cli_prompt.CMD.SETTING and len(_input) > 1 else _input[0]
-                # Handle user defined methods and settings
+            # Handle user defined methods and settings
             if keyword in self._methods:
                 args = [flags[arg] for arg in self._methods[keyword].__inspection__.args[1:]]
                 varargs = self._methods[keyword].__inspection__.varargs
@@ -125,6 +138,7 @@ class cli_session:
                 if varkw is None and len(kwargs) > 0:
                     raise cli_exception.InputException("'{}'. Method '{}' does not accept **kwargs".format(_input, keyword))
 
+                # Execute the selected method
                 try:
                     res = self._methods[keyword](*args, **kwargs)
                 except Exception as e:
@@ -137,6 +151,7 @@ class cli_session:
                         if not self.isSilent(): print("={}".format(res))
                     elif res is not None:
                         if not self.isSilent(): print(res)
+
             # Handles printing of all settings
             elif keyword in cli_prompt.CMD.SETTING:
                     if not self.isSilent(): print('\n'.join(["{}={}".format(k, self._settings[k]) for k in self._settings.keys()]))

@@ -53,6 +53,9 @@ class CLI_Logger():
         return self._silent
 
     def disable(self):
+        """
+        Removes this as a logger
+        """
         self._disable_logs()
 
         if len(CLI_Logger.ACTIVE_HANDLERS) > 1 and self == CLI_Logger.ACTIVE_HANDLERS[-1]:
@@ -63,24 +66,31 @@ class CLI_Logger():
 
 
     def _disable_logs(self):
+        """
+        Removes handlers from logger
+        """
         if self.handler_stdout is not None:
             logging.root.removeHandler(self.handler_stdout)
         if self.handler_file is not None:
             logging.root.removeHandler(self.handler_file)
 
     def enable(self):
+        """
+        Set this as the current logger
+        """
         if len(CLI_Logger.ACTIVE_HANDLERS) > 0:
             CLI_Logger.ACTIVE_HANDLERS[-1]._disable_logs()
         CLI_Logger.ACTIVE_HANDLERS.append(self)
         self._enable_logs()
     
     def _enable_logs(self):
+        """
+        Registers handlers to logger
+        """
         if self.handler_stdout is not None:
             logging.root.addHandler(self.handler_stdout)
         if self.handler_file is not None:
             logging.root.addHandler(self.handler_file)
-
-
 
     def _compile_styles(self, styles, modifiers={}):
         """

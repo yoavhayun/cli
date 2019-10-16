@@ -98,13 +98,13 @@ class Method:
 
         # Update the documentation of the method
         if execution.__doc__ is not None:
-            method.__doc__ = cli_parser.copy_argspec._format_doc(execution.__doc__)
+            method.__doc__ = cli_parser.copy_argspec.format_doc(execution.__doc__)
         else:
             method.__doc__ = "{} '{}'".format(self._type, self.__name__)
         for validation in self._validations:
             if validation.__doc__ is not None:
                 method.__doc__ += '\n\n' + '\n'.join(
-                    ['* ' + l for l in cli_parser.copy_argspec._format_doc(validation.__doc__).split('\n') if l != ""])
+                    ['* ' + l for l in cli_parser.copy_argspec.format_doc(validation.__doc__).split('\n') if l != ""])
         method.__doc__ += '\n' + cli_parser.DOC_SEP
 
 
@@ -123,20 +123,31 @@ class CLI_Methods(OrderedDict):
         self._wrapped_methods = defaultdict(OrderedDict)
         self._settings = defaultdict(OrderedDict)
 
-
     def __getitem__(self, item):
+        """
+        Acts as a defaultdict for methods
+        """
         if item not in self:
             self[item] = Method(item)
         
         return super(OrderedDict, self).__getitem__(item)
 
     def compiled(self, instance):
+        """
+        Returns the compiled methods of an instance
+        """
         return self._wrapped_methods[instance]
 
     def settings(self, instance):
+        """
+        Returns the current settings of an instance
+        """
         return self._settings[instance]
 
-    def _compile(self, instance):
+    def compile(self, instance):
+        """
+        Compiles all the methods and setttings with the given instance
+        """
         for method in self:
             self._complied_methods[instance][method] = cli_parser.add_method_inspection(self[method]._compile(instance))
 
@@ -164,6 +175,9 @@ class CLI_Methods(OrderedDict):
                 self._wrapped_methods[instance][method] = wrapper()
 
 class MethodDecorator(ABC):
+    """
+    An abstract method decorator
+    """
     def __init__(self, methods_dict):
         self._methods_dict = methods_dict
         self.__attributes = {}
@@ -172,20 +186,32 @@ class MethodDecorator(ABC):
     def _record_method(self, method): pass
 
     def __call__(self, method):
+        """
+        Returns the decorator
+        """
         self.__update_attributes(method)
         return self.__wrap_method(method)
 
     def _record_attributes(self, **attributes):
+        """
+        Record attributes to be passed when wrapping the next method
+        """
         for key in attributes:
             self.__attributes[key] = attributes[key]
 
     def __update_attributes(self, method):
+        """
+        Passes all the recorded attributes to the wrapped method
+        """
         for key in self.__attributes:
             self._methods_dict[method.__name__].attributes[key] = self.__attributes[key]
         
         self.__attributes = {}
 
     def __wrap_method(self, method):
+        """
+        records the given method in the dictionary and redirects it to the compiled method
+        """
         self._record_method(method)
 
         @cli_parser.copy_argspec(method)
@@ -199,12 +225,18 @@ class MethodDecorator(ABC):
 
     
 class OperationDecorator(MethodDecorator):
+    """
+    Wraps a method as an Operation
+    """
     def _record_method(self, method):
         self._methods_dict[method.__name__].setExecution(method, "Operation")
 
     def __call__(self): return super().__call__
 
 class SettingDecorator(MethodDecorator):
+    """
+    Wraps a method as a Setting
+    """
     def _record_method(self, method):
         self._methods_dict[method.__name__].setExecution(method, "Setting")
 
@@ -213,6 +245,9 @@ class SettingDecorator(MethodDecorator):
         return super().__call__
 
 class ValidationDecorator(MethodDecorator):
+    """
+    Wraps a method as a Validation for it's corresponding Operaion or Setting
+    """
     def _record_method(self, method):
         self._methods_dict[method.__name__].addValidation(method)
 

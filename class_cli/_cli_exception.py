@@ -1,3 +1,10 @@
+"""
+This module handles the prompt for the cli
+
+Author: Hayun, Yoav 
+Email: YoavHayun@gmail.com
+"""
+
 class CLIException(Exception):
     def __init__(self, message):
         super(Exception, self).__init__(message)

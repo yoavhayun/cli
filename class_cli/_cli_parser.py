@@ -26,7 +26,7 @@ class copy_argspec(object):
 
     def __call__(self, wrapped, shallow=False):
         wrapped.__name__ = self.source.__name__
-        wrapped.__doc__ = copy_argspec._format_doc(self.source.__doc__)
+        wrapped.__doc__ = copy_argspec.format_doc(self.source.__doc__)
         wrapped.__spec__ = self.source.__spec__
         if not shallow:
             wrapped.__module__ = self.source.__module__
@@ -34,7 +34,15 @@ class copy_argspec(object):
         return wrapped
     
     @staticmethod
-    def _format_doc(doc, line_prefix='', line_suffix=''):
+    def format_doc(doc, line_prefix='', line_suffix=''):
+        """
+        formats a raw document
+        fixes all leading whitespaces
+
+        Accepts:
+            @line_prefix    will appear at the beggining of each line
+            @line_suffix    will appear at the end of each line
+        """
         if doc is not None:
             lines = doc.split('\n')
             while len(lines) > 0 and lines[0].strip() == '':
@@ -54,11 +62,14 @@ def _wrap_iterable_types(_type):
         if type(_type) is dict:
             _type = DictOptions(_type)
         else:
-            _type = ListOptions(_type)
+            _type = IterableOptions(_type)
 
     return _type
 
-class ListOptions:
+class IterableOptions:
+    """
+    Acts as an annotation for iterables
+    """
     def __init__(self, options):
         self.options = options
 
@@ -81,8 +92,10 @@ class ListOptions:
     def __getitem__(self, key):
         return self.find(key)
 
-class DictOptions(ListOptions):
-
+class DictOptions(IterableOptions):
+    """
+    Acts as an annotation for dictionaries
+    """
     def __getitem__(self, key):
         return self.options[self.find(key)]
 
@@ -176,7 +189,7 @@ def create_parser(name, methods, settings):
     method_parsers = parser.add_subparsers(metavar='{' + ",".join(methods_keys) + '}')
     for idx, method in enumerate(methods_keys):
         if methods[method].__doc__ is not None:
-            _description = copy_argspec._format_doc(methods[method].__doc__)
+            _description = copy_argspec.format_doc(methods[method].__doc__)
         else:
             _description = "Method {} of Class {}".format(method, name)
         _help = _description if idx > 0 else "{}\n{}".format(DOC_SEP, _description)
@@ -192,7 +205,7 @@ def create_parser(name, methods, settings):
             settings_parsers = settings_parser.add_subparsers()
             for idx, setting in enumerate(settings):
                 if methods[setting].__doc__ is not None:
-                    _description = copy_argspec._format_doc(methods[setting].__doc__)
+                    _description = copy_argspec.format_doc(methods[setting].__doc__)
                 else:
                     _description = "Setting {} of Class {}".format(setting, name)
                 _help = _description if idx > 0 else "{}\n{}".format(DOC_SEP, _description)
