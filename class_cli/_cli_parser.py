@@ -75,7 +75,7 @@ class IterableOptions:
 
     def __call__(self, key):
         if key not in [str(o) for o in self.options]:
-            raise Exception("'{}' is not a valid option".format(key))
+            raise TypeError("'{}' is not a valid option".format(key))
         return self[key]
     
     def __complete__(self, key):
@@ -92,12 +92,26 @@ class IterableOptions:
     def __getitem__(self, key):
         return self.find(key)
 
+    def __str__(self):
+        return "<value from: {}>".format(', '.join([str(k) for k in self.options]))
+
+
+    def __repr__(self):
+        return str(self)
+
 class DictOptions(IterableOptions):
     """
     Acts as an annotation for dictionaries
     """
     def __getitem__(self, key):
         return self.options[self.find(key)]
+
+    def __str__(self):
+        return IterableOptions.__str__(self)
+
+    def __repr__(self):
+        return str(self)
+
 
 
 def add_method_inspection(method):
