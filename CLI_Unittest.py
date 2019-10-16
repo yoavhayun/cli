@@ -2,6 +2,15 @@ import unittest, traceback
 from class_cli.cli import CLI
 import class_cli._cli_exception as cli_exception
 
+class TestCLI__General(unittest.TestCase):
+    def test_help_behavior(self):
+        cli = CLI()
+        @cli.Program()
+        class Tester:
+            pass
+
+        Tester().CLI.run("--help")
+
 class TestCLI_Compilation(unittest.TestCase):
 
     def test_missing_implementation(self):

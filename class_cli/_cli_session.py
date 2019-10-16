@@ -84,7 +84,8 @@ class cli_session:
                     flags = self._parser.parse_args(_input).__dict__
             except SystemExit: 
                 self.isFile = False
-                raise cli_exception.InputException(traceback.format_exc())
+                if int(str(sys.exc_info()[1])) != 0:
+                    raise cli_exception.InputException(traceback.format_exc())
                 return False
             # Handle read commands from a file
             if _input[0] in cli_prompt.CMD.READ and not self.isFile:
