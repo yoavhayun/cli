@@ -22,6 +22,8 @@ class CLI_Logger():
         self._log = logging.getLogger(filepath)
         if logLevel is not None:
             self._log.setLevel(logLevel)
+        
+        self._silent = logLevel is None
 
         # Define the styling of the logger
         self._styles = {}
@@ -46,6 +48,9 @@ class CLI_Logger():
             self.handler_file = logging.FileHandler(filepath)
             self.handler_file.setLevel(logging.DEBUG)
             self.handler_file.setFormatter(CLI_Logger.Styler(self._compile_styles(self._styles)))
+
+    def isSilent(self):
+        return self._silent
 
     def disable(self):
         self._disable_logs()
