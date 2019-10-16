@@ -40,7 +40,8 @@ The module exposes an API in the form of decorators. These are the available dec
 
 ### Operation
 
-    Operation
+    Operation()
+
         a method decorator that defines the execution code of a method in the CLI
 
 ### Setting
@@ -54,8 +55,8 @@ The module exposes an API in the form of decorators. These are the available dec
         @updates_value      Whether or not calling this method automatically updates the inner setting value
 
 ### Validation
-   
-    Validation
+
+    Validation()
 
         A method decorator that defines a validation to be performed on an execution (Operation / Setting)
         Holds the same signature as the execution it is validating and raises an exception for invalid arguments.
@@ -73,7 +74,7 @@ In this example, we are wrapping a class, that holds a Setting named **value**, 
     @cli.Program()
     class MyClass:
     
-        @cli.Operation
+        @cli.Operation()
         def show(self):
             print("Current value is '{}'".format(self.CLI.value))
             
@@ -138,7 +139,7 @@ The CLI makes use of user code documentation in order to provide help messages t
 Using the **--help** flag will display a message relevant to the user input.
 Using it alone will display a usage message for the entire program while adding it after an Operation or Setting name will display usage information for that Operation or Setting.
 
-    @cli.Operation
+    @cli.Operation()
     def method(self):
         """
         A description of the method
@@ -159,7 +160,7 @@ Using it alone will display a usage message for the entire program while adding 
 
 Any Validations for the method will be added to the description
 
-    @cli.Validation
+    @cli.Validation()
     def method(self, arg):
         """
         cannot perform operation when disabled
@@ -182,7 +183,7 @@ Any Validations for the method will be added to the description
 
 If there are arguments for the method, you can add descriptions for them inside the method documentation with a **@** prefix as demonstrated below.
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, arg):
         """
         A description of the method
@@ -229,7 +230,7 @@ Since the user input is a String, by default the arguments passed to a method ar
 
 **Default Behavior**:
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, arg):
         print(type(arg), ';', arg)
 
@@ -242,7 +243,7 @@ Since the user input is a String, by default the arguments passed to a method ar
 Using annotations, we can provide a type to tell the CLI what is expected, and use it to convert the String into its proper type.
 The CLI accepts annotations which are a Python Callable that receive a String and returns it converted to the desired type.
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, arg:int):
         print(type(arg), ';', arg)
 
@@ -254,7 +255,7 @@ The CLI accepts annotations which are a Python Callable that receive a String an
 **Iterable Annotation**:
 You can also use an Iterable as an annotation to specify a set of options.
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, value:[1, "value", (0,0)]):
         print(type(value), ';', value)
 
@@ -275,7 +276,7 @@ You can also use an Iterable as an annotation to specify a set of options.
 During typing of input, The CLI will tip the user for the expected inputs, as well as block the user from entering invalid types into a command.
 ### Type Validation:
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
         pass
 >**CLI>** method value number|\
@@ -290,7 +291,7 @@ Auto Completion
 =============
 The CLI can auto-complete command names, file paths and argument values.
 
-    @cli.Operation
+    @cli.Operation()
     def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
         pass
     
@@ -387,7 +388,7 @@ It can only set/return it's value or add another integer to it::
             """
             return value
 
-        @cli.Validation
+        @cli.Validation()
         def add(self, value:int):
             """
             Validation Description 1
@@ -396,7 +397,7 @@ It can only set/return it's value or add another integer to it::
             if self.CLI.value is None:
                 raise Exception("Must initialize setting 'value' before performing operations")
         
-        @cli.Validation
+        @cli.Validation()
         def add(self, value:int):
             """
             Validation Description 2
@@ -405,7 +406,7 @@ It can only set/return it's value or add another integer to it::
             if value == 0:
                 raise Exception("Adding 0 will do nothing to the Integer")
         
-        @cli.Operation
+        @cli.Operation()
         def add(self, value:int):
             """
             Method Description
