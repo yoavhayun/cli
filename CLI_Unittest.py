@@ -2,7 +2,7 @@ import unittest, traceback
 from class_cli.cli import CLI
 import class_cli._cli_exception as cli_exception
 
-class TestCLI__General(unittest.TestCase):
+class General(unittest.TestCase):
     def test_help_behavior(self):
         """
         Test that calling help does not raise an Exception from argparse
@@ -14,7 +14,7 @@ class TestCLI__General(unittest.TestCase):
 
         Tester().CLI.run("--help")
 
-class TestCLI_Compilation(unittest.TestCase):
+class Compilation(unittest.TestCase):
 
     def test_missing_implementation(self):
         """
@@ -90,10 +90,10 @@ class TestCLI_Compilation(unittest.TestCase):
         tester2 = Tester()
         self.assertEqual(tester1._value, tester2._value, "Setup failed to produce the same field value for 2 different instances")
         tester1._value = 1
-        self.assertEqual(tester1._value, 1, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
-        self.assertNotEqual(tester1._value, tester2._value, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester1._value, 1, Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertNotEqual(tester1._value, tester2._value, Methods.ERROR_FIELD_MODIFIED)
         tester2._value = 1
-        self.assertEqual(tester1._value, tester2._value, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester1._value, tester2._value, Methods.ERROR_FIELD_MODIFIED)
     
     def test_matching_signature(self):
         """
@@ -236,7 +236,7 @@ class TestCLI_Compilation(unittest.TestCase):
 
 
 
-class TestCLI_Settings(unittest.TestCase):
+class Settings(unittest.TestCase):
 
     def setUp(self):
         cli = CLI()
@@ -304,83 +304,83 @@ class TestCLI_Settings(unittest.TestCase):
         Test setting of type 'str'
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_str, '', TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_str, '', Settings.ERROR_INITIAL_VALUE)
 
         expected = '1'
-        self.assertEqual(tester.set_str("1"), expected, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_str, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.set_str("1"), expected, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_str, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
         expected = '2'
-        self.assertEqual(tester.CLI.execute(".setting", "set_str", "2"), expected, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_str, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_str", "2"), expected, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_str, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_setting_int(self):
         """
         Test setting of type 'int'
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_int, 0, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_int, 0, Settings.ERROR_INITIAL_VALUE)
 
         expected = 1
-        self.assertEqual(tester.set_int(1), expected, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_int, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.set_int(1), expected, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_int, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
         expected = 2
-        self.assertEqual(tester.CLI.execute(".setting", "set_int", "2"), expected, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_int, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_int", "2"), expected, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_int, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_setting_args(self):
         """
         Test setting that accepts *args
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_args, tuple(), TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_args, tuple(), Settings.ERROR_INITIAL_VALUE)
 
         expected = (1, 2, 3, 4)
-        self.assertEqual(tester.set_args(1, 2, 3, 4), expected, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_args, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.set_args(1, 2, 3, 4), expected, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_args, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
         expected = ('1', '2', '3', '4')
-        self.assertEqual(tester.CLI.execute(".setting", "set_args", "1", "2", "3", "4"), expected, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_args, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_args", "1", "2", "3", "4"), expected, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_args, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_setting_kwargs(self):
         """
         Test setting that accepts *kwargs
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_kwargs, {}, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_kwargs, {}, Settings.ERROR_INITIAL_VALUE)
 
         expected = {"_1":1, "_2":2, "_3":3, "_4":4}
-        self.assertEqual(tester.set_kwargs(_1=1, _2=2, _3=3, _4=4), expected, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_kwargs, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.set_kwargs(_1=1, _2=2, _3=3, _4=4), expected, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_kwargs, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
         expected = {"1":"1", "2":"2", "3":"3", "4":"4"}
-        self.assertEqual(tester.CLI.execute(".setting", "set_kwargs", "1=1", "2=2", "3=3", "4=4"), expected, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_kwargs, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_kwargs", "1=1", "2=2", "3=3", "4=4"), expected, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_kwargs, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_setting_dict(self):
         """
         Test setting that accepts values from a dict
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_dict, None, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_dict, None, Settings.ERROR_INITIAL_VALUE)
 
         self.values["new"] = "New Value"
         for key in self.values:
             expected = self.values[key]
-            self.assertEqual(tester.CLI.execute(".setting", "set_dict", key), expected, TestCLI_Settings.ERROR_CLI_CALL)
-            self.assertEqual(tester.CLI.set_dict, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+            self.assertEqual(tester.CLI.execute(".setting", "set_dict", key), expected, Settings.ERROR_CLI_CALL)
+            self.assertEqual(tester.CLI.set_dict, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_setting_iterable(self):
         """
         Test setting that accepts values from an iterable
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_iterable, None, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_iterable, None, Settings.ERROR_INITIAL_VALUE)
 
         self.values["new"] = "New Value"
         for key in self.values:
             expected = key
-            self.assertEqual(tester.CLI.execute(".setting", "set_iterable", key), expected, TestCLI_Settings.ERROR_CLI_CALL)
-            self.assertEqual(tester.CLI.set_iterable, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+            self.assertEqual(tester.CLI.execute(".setting", "set_iterable", key), expected, Settings.ERROR_CLI_CALL)
+            self.assertEqual(tester.CLI.set_iterable, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
         non_existing = '-'
 
@@ -392,15 +392,15 @@ class TestCLI_Settings(unittest.TestCase):
         Test setting that has a constant value
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_constant, None, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_constant, None, Settings.ERROR_INITIAL_VALUE)
 
         expected_return = ''
         expected_value = None
-        self.assertEqual(tester.set_constant(''), expected_return, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_constant, expected_value, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester.set_constant(''), expected_return, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_constant, expected_value, Settings.ERROR_SETTING_MODIFIED)
 
-        self.assertEqual(tester.CLI.execute(".setting", "set_constant" ,''), expected_return, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_constant, expected_value, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_constant" ,''), expected_return, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_constant, expected_value, Settings.ERROR_SETTING_MODIFIED)
 
 
     def test_setting_exception(self):
@@ -408,24 +408,24 @@ class TestCLI_Settings(unittest.TestCase):
         Test setting that has Validation() attached
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.set_exception, None, TestCLI_Settings.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester.CLI.set_exception, None, Settings.ERROR_INITIAL_VALUE)
 
         with self.assertRaises(Exception):
             tester.set_exception('0')
-        self.assertEqual(tester.CLI.set_exception, None, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester.CLI.set_exception, None, Settings.ERROR_SETTING_MODIFIED)
 
         expected = None
         self.assertEqual(tester.CLI.execute(".setting", "set_exception", "0"), expected)
-        self.assertEqual(tester.CLI.set_exception, expected, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester.CLI.set_exception, expected, Settings.ERROR_SETTING_MODIFIED)
         
         tester._silence_exception()
         expected = ''
-        self.assertEqual(tester.set_exception(''), expected, TestCLI_Settings.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester.CLI.set_exception, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.set_exception(''), expected, Settings.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester.CLI.set_exception, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
         expected = '0'
-        self.assertEqual(tester.CLI.execute(".setting", "set_exception", "0"), expected, TestCLI_Settings.ERROR_CLI_CALL)
-        self.assertEqual(tester.CLI.set_exception, expected, TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute(".setting", "set_exception", "0"), expected, Settings.ERROR_CLI_CALL)
+        self.assertEqual(tester.CLI.set_exception, expected, Settings.ERROR_SETTING_NOT_MODIFIED)
 
     def test_assert_setting_isolation(self):
         """
@@ -435,10 +435,10 @@ class TestCLI_Settings(unittest.TestCase):
         tester2 = self.tester()
         self.assertEqual(tester1.CLI.set_str, tester2.CLI.set_str, "Setup failed to produce the same setting value for 2 different instances")
         tester1.set_str("value")
-        self.assertEqual(tester1.CLI.set_str, "value", TestCLI_Settings.ERROR_SETTING_NOT_MODIFIED)
-        self.assertNotEqual(tester1.CLI.set_str, tester2.CLI.set_str, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester1.CLI.set_str, "value", Settings.ERROR_SETTING_NOT_MODIFIED)
+        self.assertNotEqual(tester1.CLI.set_str, tester2.CLI.set_str, Settings.ERROR_SETTING_MODIFIED)
         tester2.set_str("value")
-        self.assertEqual(tester1.CLI.set_str, tester2.CLI.set_str, TestCLI_Settings.ERROR_SETTING_MODIFIED)
+        self.assertEqual(tester1.CLI.set_str, tester2.CLI.set_str, Settings.ERROR_SETTING_MODIFIED)
 
 
 
@@ -448,7 +448,7 @@ class TestCLI_Settings(unittest.TestCase):
 
 
 
-class TestCLI_Methods(unittest.TestCase):
+class Methods(unittest.TestCase):
 
     def setUp(self):
         cli = CLI()
@@ -520,83 +520,83 @@ class TestCLI_Methods(unittest.TestCase):
         Test operation of type 'str'
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         expected = '1'
-        self.assertEqual(tester.op_str("1"), expected, TestCLI_Methods.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.op_str("1"), expected, Methods.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
         expected = '2'
-        self.assertEqual(tester.CLI.execute("op_str", "2"), expected, TestCLI_Methods.ERROR_CLI_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute("op_str", "2"), expected, Methods.ERROR_CLI_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_operation_int(self):
         """
         Test operation of type 'int'
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         expected = 1
-        self.assertEqual(tester.op_int(1), expected, TestCLI_Methods.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.op_int(1), expected, Methods.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
         expected = 2
-        self.assertEqual(tester.CLI.execute("op_int", "2"), expected, TestCLI_Methods.ERROR_CLI_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute("op_int", "2"), expected, Methods.ERROR_CLI_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_operation_args(self):
         """
         Test operation that accepts *args
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         expected = (1, 2, 3, 4)
-        self.assertEqual(tester.op_args(1, 2, 3, 4), expected, TestCLI_Methods.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.op_args(1, 2, 3, 4), expected, Methods.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
         expected = ('1', '2', '3', '4')
-        self.assertEqual(tester.CLI.execute("op_args", "1", "2", "3", "4"), expected, TestCLI_Methods.ERROR_CLI_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute("op_args", "1", "2", "3", "4"), expected, Methods.ERROR_CLI_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_operation_kwargs(self):
         """
         Test operation that accepts *kwargs
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         expected = {"_1":1, "_2":2, "_3":3, "_4":4}
-        self.assertEqual(tester.op_kwargs(_1=1, _2=2, _3=3, _4=4), expected, TestCLI_Methods.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.op_kwargs(_1=1, _2=2, _3=3, _4=4), expected, Methods.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
         expected = {"1":"1", "2":"2", "3":"3", "4":"4"}
-        self.assertEqual(tester.CLI.execute("op_kwargs", "1=1", "2=2", "3=3", "4=4"), expected, TestCLI_Methods.ERROR_CLI_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute("op_kwargs", "1=1", "2=2", "3=3", "4=4"), expected, Methods.ERROR_CLI_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_operation_dict(self):
         """
         Test operation that accepts values from a dict
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         self.values["new"] = "New Value"
         for key in self.values:
             expected = self.values[key]
-            self.assertEqual(tester.CLI.execute("op_dict", key), expected, TestCLI_Methods.ERROR_CLI_CALL)
-            self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+            self.assertEqual(tester.CLI.execute("op_dict", key), expected, Methods.ERROR_CLI_CALL)
+            self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_operation_iterable(self):
         """
         Test operation that accepts values from an iterable
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         self.values["new"] = "New Value"
         for key in self.values:
             expected = key
-            self.assertEqual(tester.CLI.execute("op_iterable", key), expected, TestCLI_Methods.ERROR_CLI_CALL)
-            self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+            self.assertEqual(tester.CLI.execute("op_iterable", key), expected, Methods.ERROR_CLI_CALL)
+            self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
         
         non_existing = '-'
 
@@ -609,24 +609,24 @@ class TestCLI_Methods(unittest.TestCase):
         Test operation that has Validation() attached
         """
         tester = self.tester()
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_INITIAL_VALUE)
+        self.assertEqual(tester._value, None, Methods.ERROR_INITIAL_VALUE)
 
         with self.assertRaises(Exception):
             tester.op_exception('0')
-        self.assertEqual(tester._value, None, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester._value, None, Methods.ERROR_FIELD_MODIFIED)
 
         expected = None
         self.assertEqual(tester.CLI.execute("op_exception", "0"), expected)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_MODIFIED)
         
         tester._silence_exception()
         expected = ''
-        self.assertEqual(tester.op_exception(''), expected, TestCLI_Methods.ERROR_INSTANCE_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.op_exception(''), expected, Methods.ERROR_INSTANCE_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
         expected = '0'
-        self.assertEqual(tester.CLI.execute("op_exception", "0"), expected, TestCLI_Methods.ERROR_CLI_CALL)
-        self.assertEqual(tester._value, expected, TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertEqual(tester.CLI.execute("op_exception", "0"), expected, Methods.ERROR_CLI_CALL)
+        self.assertEqual(tester._value, expected, Methods.ERROR_FIELD_NOT_MODIFIED)
 
     def test_assert_operation_isolation(self):
         """
@@ -636,13 +636,13 @@ class TestCLI_Methods(unittest.TestCase):
         tester2 = self.tester()
         self.assertEqual(tester1._value, tester2._value, "Setup failed to produce the same field value for 2 different instances")
         tester1.op_str("value")
-        self.assertEqual(tester1._value, "value", TestCLI_Methods.ERROR_FIELD_NOT_MODIFIED)
-        self.assertNotEqual(tester1._value, tester2._value, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester1._value, "value", Methods.ERROR_FIELD_NOT_MODIFIED)
+        self.assertNotEqual(tester1._value, tester2._value, Methods.ERROR_FIELD_MODIFIED)
         tester2.op_str("value")
-        self.assertEqual(tester1._value, tester2._value, TestCLI_Methods.ERROR_FIELD_MODIFIED)
+        self.assertEqual(tester1._value, tester2._value, Methods.ERROR_FIELD_MODIFIED)
 
 
-class TestCLI_Parser(unittest.TestCase):
+class Parser(unittest.TestCase):
 
     def setUp(self):
         cli = CLI()
