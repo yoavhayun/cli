@@ -89,17 +89,21 @@ class cli_session:
             # Handle end session command
             elif _input[0] in cli_prompt.CMD.END:
                 return True
+
+            # Handle 
+            fail = None
             try:
                 if len(_input) == 2 and _input[0] in cli_prompt.CMD.SETTING and _input[1] in self._settings:
                     if not self.isSilent(): print("={}".format(self._settings[_input[1]]))
                     return False
                 else:
                     flags = self._parser.parse_args(_input).__dict__
-            except SystemExit: 
+            except SystemExit as e: 
                 self.isFile = False
-                if int(str(sys.exc_info()[1])) != 0:
-                    raise cli_exception.InputException(traceback.format_exc())
-                return False
+                if sum([1 if help_key in _input else 0 for help_key in cli_prompt.CMD.HELP]) == 0:
+                    fail = cli_exception.InputException(_input)
+            if fail is not None:
+                raise fail
             # Handle read commands from a file
             if _input[0] in cli_prompt.CMD.READ and not self.isFile:
                 finish = False
@@ -221,9 +225,9 @@ class cli_session:
                 lastLine = self.runLine(inputLine)
                 if lastLine:
                     break
-            except SystemExit:
-                if int(str(sys.exc_info()[1])) != 0:
-                    raise
+            except SystemExit: pass
+                # if int(str(sys.exc_info()[1])) != 0:
+                #     raise
             except Exception as e:
                 if not self.isSilent():
                     traceback.print_exc()
