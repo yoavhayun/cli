@@ -6,9 +6,11 @@ Email: YoavHayun@gmail.com
 """
 
 from collections import OrderedDict, defaultdict
+from abc import ABC, abstractmethod
 from enum import Enum
 import inspect
 import class_cli._cli_parser as cli_parser
+import class_cli._cli_exception as cli_exception
 
 class Method:
     """
@@ -29,8 +31,7 @@ class Method:
         Sets the execution implementation for this method
         """
         if self._execution is not None:
-            compilationException = Exception("A Method can only have 1 execution implementation")
-            raise compilationException
+            raise cli_exception.CompilationException("A Method can only have 1 execution implementation")
         self._execution = execution
         self._type = type
 
@@ -46,44 +47,37 @@ class Method:
         Checks that compilation parts are all valid
         Run this before compiling
         """
-        compilationException = None
         if self._execution is None:
-            compilationException = Exception("{} '{}' has declared validation but did not found an implementation".format(self._type, self.__name__))
+            raise cli_exception.InitializationException("method '{}' has declared validation but did not found an implementation".format(self.__name__))
 
         def compare_specs(spec1, spec2, attribute, extractor):
             if getattr(spec1, attribute) is None or getattr(spec2, attribute) is None:
                 if getattr(spec1, attribute) is None and getattr(spec2, attribute) is None:
                     return 
                 else:
-                    return Exception("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
+                    raise cli_exception.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
 
             ls1 = extractor(getattr(spec1, attribute))
             ls2 = extractor(getattr(spec2, attribute))
             if len(ls1) != len(ls2):
-                return Exception("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
+                raise cli_exception.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
             for i, attrib in enumerate(ls1):
                 if ls2[i] != attrib:
-                    return Exception("{} '{}' has validation with non matching '{}' ({} != {})".format(self._type, self.__name__, attribute, attrib, ls2[i]))
+                    raise cli_exception.InitializationException("{} '{}' has validation with non matching '{}' ({} != {})".format(self._type, self.__name__, attribute, attrib, ls2[i]))
 
-        if compilationException is None:
-            spec = self._execution.__spec__ if hasattr(self._execution, "__spec__") else inspect.getfullargspec(self._execution)
-            for validation in self._validations:
-                validation_spec = validation.__spec__ if hasattr(validation, "__spec__") else inspect.getfullargspec(validation)
+        spec = self._execution.__spec__ if hasattr(self._execution, "__spec__") else inspect.getfullargspec(self._execution)
+        for validation in self._validations:
+            validation_spec = validation.__spec__ if hasattr(validation, "__spec__") else inspect.getfullargspec(validation)
 
-                attributes = {
-                    "args" : lambda x:x,
-                    "defaults" : lambda x:x,
-                    "annotations" : lambda x:[x[k] for k in x],
-                    "varargs" : lambda x:x,
-                    "varkw" : lambda x:x,
-                }
-                for attribute in attributes:
-                    compilationException = compare_specs(spec, validation_spec, attribute, attributes[attribute])
-                    if compilationException is not None:
-                        break
-
-        if compilationException is not None:
-            raise compilationException
+            attributes = {
+                "args" : lambda x:x,
+                "defaults" : lambda x:x,
+                "annotations" : lambda x:[x[k] for k in x],
+                "varargs" : lambda x:x,
+                "varkw" : lambda x:x,
+            }
+            for attribute in attributes:
+                compare_specs(spec, validation_spec, attribute, attributes[attribute])
 
     def _compile(self, instance):
         """
@@ -168,3 +162,60 @@ class CLI_Methods(OrderedDict):
                         return self._complied_methods[instance][_method](*args, **kwargs)
                     return operation
                 self._wrapped_methods[instance][method] = wrapper()
+
+class MethodDecorator(ABC):
+    def __init__(self, methods_dict):
+        self._methods_dict = methods_dict
+        self.__attributes = {}
+    
+    @abstractmethod
+    def _record_method(self, method): pass
+
+    def __call__(self, method):
+        self.__update_attributes(method)
+        return self.__wrap_method(method)
+
+    def _record_attributes(self, **attributes):
+        for key in attributes:
+            self.__attributes[key] = attributes[key]
+
+    def __update_attributes(self, method):
+        for key in self.__attributes:
+            self._methods_dict[method.__name__].attributes[key] = self.__attributes[key]
+        
+        self.__attributes = {}
+
+    def __wrap_method(self, method):
+        self._record_method(method)
+
+        @cli_parser.copy_argspec(method)
+        def redirected(*args, **kwargs):
+            linked_methods = self._methods_dict.compiled(args[0])
+            if method.__name__ not in linked_methods:
+                raise cli_exception.InitializationException("Cannot access CLI operations and settings before an instance is constructed")
+            return linked_methods[method.__name__](*(args[1:]), **kwargs)
+    
+        return redirected
+
+    
+class OperationDecorator(MethodDecorator):
+    def _record_method(self, method):
+        self._methods_dict[method.__name__].setExecution(method, "Operation")
+
+    def __call__(self): return super().__call__
+
+class SettingDecorator(MethodDecorator):
+    def _record_method(self, method):
+        self._methods_dict[method.__name__].setExecution(method, "Setting")
+
+    def __call__(self, initial_value=None, updates_value=True):
+        self._record_attributes(**{"initial_value":initial_value, "updates_value":updates_value})
+        return super().__call__
+
+class ValidationDecorator(MethodDecorator):
+    def _record_method(self, method):
+        self._methods_dict[method.__name__].addValidation(method)
+
+    def __call__(self): return super().__call__
+
+    

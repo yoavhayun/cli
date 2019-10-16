@@ -258,18 +258,41 @@ class CLI():
             self.name = self._cli.name
             self.__cli_session = self._cli._Compile()
 
-        def main(self):
-            "A Default main execution of the CLI program"
-            return self.run(*(sys.argv[1:]))
-        
-        def run(self, *args):
+        def __run(self, *args):
             """
-            starts the CLI program
+            Executes the given arguments on the CLI program
+            * if not args are given, it will open the CLI program for user input
             """
             self.__logger.enable()
             res = self.__cli_session.run(*args)
             self.__logger.disable()
             return res
+
+        def main(self):
+            """
+            A default main execution of the CLI program
+            """
+            try:
+                return self.__run(*(sys.argv[1:]))
+            except: pass
+        
+        def run(self, line):
+            """
+            Executes a single input line on the program
+            """
+            return self.__run(*cli_prompt.split_input(line))
+
+        def execute(self, *args):
+            """
+            Silently executes the given argument on the CLI program, returning the result.
+            
+            """
+            silent_state = self.__cli_session.isSilent()
+            try:
+                self.__cli_session.setSilent(True)
+                return self.__run(*args)
+            finally:
+                self.__cli_session.setSilent(silent_state)
 
         def __getattribute__(self, name):
             """
@@ -285,38 +308,10 @@ class CLI():
 # Decorators
 ############
 
-    def Operation(self, func):
-        """
-        Method Decorator
-        Records a funcion as a CLI operation
-        """
-        self.methods_dict[func.__name__].setExecution(func, "Operation")
-        return self._redirection(func)
-    
-    def Setting(self, initial_value, updates_value:bool=True):
-        """
-        Method Decorator
-        Records a funcion as a CLI Setting
-        Accepts:
-            initial_value       the initial value of the setting on initialization
-        To access the setting use : self.CLI.[setting]{=value}
-        """
-        def wrapper(func):
-            self.methods_dict[func.__name__].setExecution(func, "Setting")
-            self.methods_dict[func.__name__].attributes["initial_value"] = initial_value
-            self.methods_dict[func.__name__].attributes["updates_value"] = updates_value
-            return self._redirection(func)
-        return wrapper
-
-    def Validation(self, func):
-        """
-        Method Decorator
-        Records a funcion as a CLI operation
-        Accepts:
-            func           The function should raise an exception if the operation is not to be executed
-        """
-        self.methods_dict[func.__name__].addValidation(func)
-        return self._redirection(func)
+    def __define_decorators(self):
+        self.Operation = cli_methods.OperationDecorator(self.methods_dict)
+        self.Setting = cli_methods.SettingDecorator(self.methods_dict)
+        self.Validation = cli_methods.ValidationDecorator(self.methods_dict)
 
     def Program(self, name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO):
         """
@@ -389,6 +384,8 @@ class CLI():
             cli_prompt.STYLE.INPUT.value       : 'yellow',
             cli_prompt.STYLE.STATUSBAR.value   : '#000000 bg:#0000FF'
         }
+
+        self.__define_decorators()
     
     def _link_to_instance(self, wrapped, cls, modifiers, *args, **kwargs):
         """
@@ -438,4 +435,4 @@ class CLI():
         _settings = self.methods_dict.settings(self.instance)
         _parser = cli_parser.create_parser(self.name, _methods, _settings)
         _style = prompt.styles.Style.from_dict(self.style)
-        return cli_session(self.name, self.description, self.instance, _methods, _settings, _parser, _style)
+        return cli_session(self.name, self.description, self.instance, _methods, _settings, _parser, _style, silent=self.logger.isSilent())

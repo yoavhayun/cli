@@ -6,10 +6,11 @@ import sys
 from class_cli._colors import colors
 import class_cli._cli_prompt as cli_prompt
 import class_cli._cli_parser as cli_parser
+import class_cli._cli_exception as cli_exception
 
 class cli_session:
 
-    def __init__(self, name, description, instance, methods, settings, parser, style):
+    def __init__(self, name, description, instance, methods, settings, parser, style, silent=False):
         self.name = name
         self.description = description
         self._methods = methods
@@ -17,6 +18,7 @@ class cli_session:
         self._parser = parser
         self._style = style
         self._instance = instance
+        self.setSilent(silent)
 
         try:
             self._prompt = self._build_prompt().prompt
@@ -25,6 +27,12 @@ class cli_session:
         self.isFile = False
 
         self._last_result = None
+
+    def isSilent(self):
+        return self._silent
+    
+    def setSilent(self, silent=True):
+        self._silent = silent
 
     def run(self, *args):
         if len(args) == 0:
@@ -63,19 +71,20 @@ class cli_session:
                     if toPrint.lower().startswith(code):
                         toPrint = cli_prompt.FILE_COLORS[code]  + toPrint[len(code):].strip() + colors.reset
                         break
-                prompt.print_formatted_text(prompt.ANSI(toPrint))
+                if not self.isSilent(): prompt.print_formatted_text(prompt.ANSI(toPrint))
                 return False
             # Handle end session command
             elif _input[0] in cli_prompt.CMD.END:
                 return True
             try:
                 if len(_input) == 2 and _input[0] in cli_prompt.CMD.SETTING and _input[1] in self._settings:
-                    print("={}".format(self._settings[_input[1]]))
+                    if not self.isSilent(): print("={}".format(self._settings[_input[1]]))
                     return False
                 else:
                     flags = self._parser.parse_args(_input).__dict__
             except SystemExit: 
                 self.isFile = False
+                raise cli_exception.InputException(traceback.format_exc())
                 return False
             # Handle read commands from a file
             if _input[0] in cli_prompt.CMD.READ and not self.isFile:
@@ -101,36 +110,42 @@ class cli_session:
                 return finish
             
             keyword = _input[1] if _input[0] in cli_prompt.CMD.SETTING and len(_input) > 1 else _input[0]
-            try:
                 # Handle user defined methods and settings
-                if keyword in self._methods:
-                    args = [flags[arg] for arg in self._methods[keyword].__inspection__.args[1:]]
-                    varargs = self._methods[keyword].__inspection__.varargs
-                    varkw = self._methods[keyword].__inspection__.varkw
-                    _args, kwargs = cli_prompt.format_extra_arguments(flags[varargs] if varargs is not None else None,
-                                                flags[varkw] if varkw is not None else None)
-                    args += _args
+            if keyword in self._methods:
+                args = [flags[arg] for arg in self._methods[keyword].__inspection__.args[1:]]
+                varargs = self._methods[keyword].__inspection__.varargs
+                varkw = self._methods[keyword].__inspection__.varkw
+                _args, kwargs = cli_prompt.format_extra_arguments(flags[varargs] if varargs is not None else None,
+                                            flags[varkw] if varkw is not None else None)
+                args += _args
 
+                if varargs is None and len(_args) > 0:
+                    raise cli_exception.InputException("'{}'. Method '{}' does not accept *args".format(_input, keyword))
+                if varkw is None and len(kwargs) > 0:
+                    raise cli_exception.InputException("'{}'. Method '{}' does not accept **kwargs".format(_input, keyword))
+
+                try:
                     res = self._methods[keyword](*args, **kwargs)
+                except Exception as e:
+                    self._error(e)
+                    self._debug(traceback.format_exc())
+                    self.isFile = False
+                else:
                     self._last_result = res
                     if _input[0] in cli_prompt.CMD.SETTING:
-                        print("={}".format(res))
+                        if not self.isSilent(): print("={}".format(res))
                     elif res is not None:
-                        print(res)
-                # Handles printing of all settings
-                elif keyword in cli_prompt.CMD.SETTING:
-                        print('\n'.join(["{}={}".format(k, self._settings[k]) for k in self._settings.keys()]))
-            except Exception as e:
-                self._error(e)
-                self._debug(traceback.format_exc())
-                self.isFile = False
+                        if not self.isSilent(): print(res)
+            # Handles printing of all settings
+            elif keyword in cli_prompt.CMD.SETTING:
+                    if not self.isSilent(): print('\n'.join(["{}={}".format(k, self._settings[k]) for k in self._settings.keys()]))
             return False
     
     def _error(self, msg):
         try:
             self._instance.CLI.log.error(msg)
         except:
-            print("Error:", msg)
+            if not self.isSilent(): print("Error:", msg)
 
     def _debug(self, msg):
         try:
@@ -138,7 +153,7 @@ class cli_session:
         except: pass
 
     def getPrompt(self, parent=[]):
-        return self._prompt.prompt()
+        return self._prompt()
 
     def _build_prompt(self):
         """
@@ -194,8 +209,11 @@ class cli_session:
                 if int(str(sys.exc_info()[1])) != 0:
                     raise
             except Exception as e:
-                traceback.print_exc()
-                print(e)
+                if not self.isSilent():
+                    traceback.print_exc()
+                    print(e)
+                else:
+                    raise
 
     def _format_command_options(self, commands):
         return "'" + "' '".join([cmd for cmd in commands]) + "'"
