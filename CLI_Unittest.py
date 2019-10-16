@@ -114,6 +114,7 @@ class Compilation(unittest.TestCase):
         Tests for exception when defining non-matching method signature
         """
 
+        # Test for different names
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -121,9 +122,10 @@ class Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, b): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different names"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for different *args names
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -131,9 +133,10 @@ class Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self, *b): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different *args names"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for different **kwargs names
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -141,9 +144,10 @@ class Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self, **b): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on different **kwargs names"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for missing *args
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -151,9 +155,10 @@ class Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing *args"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for missing *args
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -161,9 +166,10 @@ class Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, *a): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing *args"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for missing **kwargs
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -171,9 +177,10 @@ class Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing **kwargs"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for missing **kwargs
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -181,9 +188,10 @@ class Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, **a): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on missing **kwargs"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for non matching default values
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -191,9 +199,10 @@ class Compilation(unittest.TestCase):
             def oper(self, a=0): pass
             @cli.Operation()
             def oper(self, a): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on non matching default values"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
+        # Test for non matching default values
         cli = CLI()
         @cli.Program(verbosity=None)
         class Tester:
@@ -201,7 +210,7 @@ class Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, a=0): pass
-        with self.assertRaises(cli_exception.InitializationException, None, "Failed on non matching default values"): 
+        with self.assertRaises(cli_exception.InitializationException): 
             Tester()
 
     def test_constructor_accessability(self):
