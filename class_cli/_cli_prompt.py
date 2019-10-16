@@ -224,7 +224,7 @@ class StatusBar(prompt.validation.Validator):
 
             # Format Arguments Message
             try:
-                len_normal_args = len(args) - sum([1 for extra in [ins.varargs, ins.varkw] if extra is not None])
+                len_normal_args = len(args) - (1 if ins.varargs is not None or ins.varkw is not None else 0)
                 if idx < len(args):
                     def part(idx):
                         return "{}{}".format(
