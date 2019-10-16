@@ -226,8 +226,6 @@ class cli_session:
                 if lastLine:
                     break
             except SystemExit: pass
-                # if int(str(sys.exc_info()[1])) != 0:
-                #     raise
             except Exception as e:
                 if not self.isSilent():
                     traceback.print_exc()
