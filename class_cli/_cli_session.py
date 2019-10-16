@@ -228,7 +228,6 @@ class cli_session:
             except SystemExit: pass
             except Exception as e:
                 if not self.isSilent():
-                    traceback.print_exc()
                     print(e)
                 else:
                     raise
