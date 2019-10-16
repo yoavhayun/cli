@@ -499,19 +499,19 @@ class Parser(unittest.TestCase):
         Test for parser type convertions
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.run("oper_type 5"), tester.oper_type(5))
-        self.assertEqual(tester.CLI.run("oper_type -5"), tester.oper_type(-5))
+        self.assertEqual(tester.CLI.run_line("oper_type 5"), tester.oper_type(5))
+        self.assertEqual(tester.CLI.run_line("oper_type -5"), tester.oper_type(-5))
         with self.assertRaises(cli_exception.InputException):
-            tester.CLI.run("oper_type -")
+            tester.CLI.run_line("oper_type -")
 
     def test_parser_args(self):
         """
         Test for parsers handeling of *args
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.run("oper_args a"), tester.oper_args('a'))
-        self.assertEqual(tester.CLI.run("  oper_args  a  "), tester.oper_args('a'))
-        self.assertEqual(tester.CLI.run("oper_args a   b    c"), tester.oper_args('a', 'b', 'c'))
+        self.assertEqual(tester.CLI.run_line("oper_args a"), tester.oper_args('a'))
+        self.assertEqual(tester.CLI.run_line("  oper_args  a  "), tester.oper_args('a'))
+        self.assertEqual(tester.CLI.run_line("oper_args a   b    c"), tester.oper_args('a', 'b', 'c'))
 
     def test_parser_kwargs(self):
         """
@@ -519,31 +519,31 @@ class Parser(unittest.TestCase):
         """
         tester = self.tester()
         with self.assertRaises(cli_exception.InputException):
-            tester.CLI.run("oper_kwargs a")
-        self.assertEqual(tester.CLI.run("oper_kwargs a=1"), tester.oper_kwargs(a='1'))
-        self.assertEqual(tester.CLI.run("oper_kwargs a=1   b=2    c=3"), tester.oper_kwargs(a='1', b='2', c='3'))
+            tester.CLI.run_line("oper_kwargs a")
+        self.assertEqual(tester.CLI.run_line("oper_kwargs a=1"), tester.oper_kwargs(a='1'))
+        self.assertEqual(tester.CLI.run_line("oper_kwargs a=1   b=2    c=3"), tester.oper_kwargs(a='1', b='2', c='3'))
 
     def test_parser_both(self):
         """
         Test for parsers handeling of both *args and **kwargs
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.run("oper_both a"), tester.oper_both('a'))
-        self.assertEqual(tester.CLI.run("oper_both a=1"), tester.oper_both(a='1'))
-        self.assertEqual(tester.CLI.run("oper_both a b c"), tester.oper_both('a', 'b', 'c'))
-        self.assertEqual(tester.CLI.run("oper_both a=1 b=2 c=3"), tester.oper_both(a='1', b='2', c='3'))
-        self.assertEqual(tester.CLI.run("oper_both a b c a=1 b=2 c=3"), tester.oper_both('a', 'b', 'c', a='1', b='2', c='3'))
-        self.assertEqual(tester.CLI.run("oper_both a=1 a b b=2 c c=3"), tester.oper_both('a', 'b', 'c', a='1', b='2', c='3'))
+        self.assertEqual(tester.CLI.run_line("oper_both a"), tester.oper_both('a'))
+        self.assertEqual(tester.CLI.run_line("oper_both a=1"), tester.oper_both(a='1'))
+        self.assertEqual(tester.CLI.run_line("oper_both a b c"), tester.oper_both('a', 'b', 'c'))
+        self.assertEqual(tester.CLI.run_line("oper_both a=1 b=2 c=3"), tester.oper_both(a='1', b='2', c='3'))
+        self.assertEqual(tester.CLI.run_line("oper_both a b c a=1 b=2 c=3"), tester.oper_both('a', 'b', 'c', a='1', b='2', c='3'))
+        self.assertEqual(tester.CLI.run_line("oper_both a=1 a b b=2 c c=3"), tester.oper_both('a', 'b', 'c', a='1', b='2', c='3'))
 
     def test_parser_all(self):
         """
         Test for parsers handeling of both *args and **kwargs and an expected argument with type convertion
         """
         tester = self.tester()
-        self.assertEqual(tester.CLI.run("oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
-        self.assertEqual(tester.CLI.run("oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
+        self.assertEqual(tester.CLI.run_line("oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
+        self.assertEqual(tester.CLI.run_line("oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
         with self.assertRaises(cli_exception.InputException):
-            tester.CLI.run("oper_all - a=1 a b b=2 c c=3")
+            tester.CLI.run_line("oper_all - a=1 a b b=2 c c=3")
 
 
 

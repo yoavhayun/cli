@@ -69,7 +69,7 @@ class CLI():
             self.name = self._cli.name
             self.__cli_session = self._cli._Compile()
 
-        def __run(self, *args):
+        def run(self, *args):
             """
             Executes the given arguments on the CLI program
             * if not args are given, it will open the CLI program for user input
@@ -84,14 +84,14 @@ class CLI():
             A default main execution of the CLI program
             """
             try:
-                return self.__run(*(sys.argv[1:]))
+                return self.run(*(sys.argv[1:]))
             except: pass
         
-        def run(self, line):
+        def run_line(self, line):
             """
             Executes a single input line on the program
             """
-            return self.__run(*cli_prompt.split_input(line))
+            return self.run(*cli_prompt.split_input(line))
 
         def execute(self, *args):
             """
@@ -101,7 +101,7 @@ class CLI():
             silent_state = self.__cli_session.isSilent()
             try:
                 self.__cli_session.setSilent(True)
-                return self.__run(*args)
+                return self.run(*args)
             finally:
                 self.__cli_session.setSilent(silent_state)
 
