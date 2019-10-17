@@ -28,6 +28,7 @@ from enum import Enum
 
 import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
+from prompt_toolkit import document
 
 from class_cli._colors import colors
 import class_cli._cli_prompt as cli_prompt
@@ -78,6 +79,9 @@ class CLI():
             res = self.__cli_session.run(*args)
             self.__logger.disable()
             return res
+
+        def _complete(self, line):
+            return [c.text for c in self.__cli_session._completer.get_completions(document.Document(line, len(line)))]
 
         def main(self):
             """

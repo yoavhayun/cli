@@ -27,6 +27,8 @@ class cli_session:
         self._instance = instance
         self.setSilent(silent)
 
+        self._completer = cli_prompt.CustomCompleter(self._methods, self._settings)
+
         try:
             self._prompt = self._build_prompt().prompt
         except prompt.output.win32.NoConsoleScreenBufferError:
@@ -180,12 +182,11 @@ class cli_session:
         This method creates and returns a prompt method to handel user input
         """
         prefix = [(cli_prompt.STYLE.getStyle(cli_prompt.STYLE.PROMPT), self.name), (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.MARKER), '> ')]
-
         status = cli_prompt.StatusBar(self._methods, self._settings)
         _prompt_session = prompt.PromptSession(message=prefix, style=self._style,
                                                 history=prompt.history.FileHistory("./.history"),
                                                 lexer=cli_prompt.CustomLexer(), 
-                                                completer=cli_prompt.CustomCompleter(self._methods, self._settings),
+                                                completer=self._completer,
                                                 rprompt=status.rprompt, 
                                                 validator=status, 
                                                 bottom_toolbar=status)

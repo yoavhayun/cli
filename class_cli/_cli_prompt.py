@@ -283,7 +283,7 @@ class CustomCompleter(prompt.completion.Completer):
                 pass
         return []
 
-    def get_completions(self, document, complete_event):
+    def get_completions(self, document, complete_event=None):
         _keyword, _input, _word, _quote = extract_details(document)
         if _quote:
             quote = _input[-1][1:-1]
