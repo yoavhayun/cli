@@ -58,7 +58,10 @@ def split_input(line):
     return [remove_quotes(part) for part in input if part!='']
 
 def join_input(args):
-    return ' '.join([keyword if ' ' not in keyword else shlex.quote(keyword) for keyword in args])
+    """
+    Joins arguments back into an argument line
+    """
+    return ' '.join([shlex.quote(keyword) if (True in [c.isspace() for c in keyword]) else keyword for keyword in args])
 
 
 def format_extra_arguments(varargs, varkw):
@@ -179,9 +182,8 @@ class StatusBar(prompt.validation.Validator):
         if _keyword in self.delegations:
             try:
                 delegated_cli = self.methods[_keyword]()
-
                 if len(_input) == 1:
-                    msg = [('', "Open '{}' CLI".format(delegated_cli.__name__))]
+                    msg = [('', "Open '{}' CLI".format(delegated_cli.CLI.name))]
                     self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
                 else:
                     self._msg = delegated_cli.CLI._validate(join_input(_input[1:]))
