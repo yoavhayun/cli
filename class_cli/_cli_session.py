@@ -17,17 +17,20 @@ import class_cli._cli_exception as cli_exception
 
 class cli_session:
 
-    def __init__(self, name, description, instance, methods, settings, parser, style, silent=False):
+    def __init__(self, name, description, instance, methods, settings, delegations, parser, style, silent=False):
         self.name = name
         self.description = description
         self._methods = methods
         self._settings = settings
+        self._delegations = delegations
         self._parser = parser
         self._style = style
         self._instance = instance
+        self._parents = []
         self.setSilent(silent)
 
-        self._completer = cli_prompt.CustomCompleter(self._methods, self._settings)
+        self._completer = cli_prompt.CustomCompleter(self._methods, self._settings, self._delegations)
+        self._status_bar = cli_prompt.StatusBar(self._methods, self._settings, self._delegations)
 
         try:
             self._prompt = self._build_prompt().prompt
@@ -53,7 +56,7 @@ class cli_session:
         if len(args) == 0:
             self.__shell()
         else:
-            self.runArgs(args)
+            self.__runArgs(args)
             return self._last_result
 
     def runLine(self, line):
@@ -64,9 +67,20 @@ class cli_session:
 
         @Return whether or not the execution was successful
         """
-        return self.runArgs(cli_prompt.split_input(line))
+        return self.__runArgs(cli_prompt.split_input(line))
 
-    def runArgs(self, args):
+    def _delegate(self, parents, isSilent, *args):
+        parents_state = self._parents
+        silent_state = self._silent
+        try:
+            self._silent = isSilent
+            self._parents = parents
+            self.__shell([' '.join(args)] if len(args) else None)
+        finally:
+            self._parents = parents_state
+            self._silent = silent_state
+
+    def __runArgs(self, args):
         """
         Parse and execute a single argument list
 
@@ -74,6 +88,7 @@ class cli_session:
 
         @Return whether or not the execution was successful
         """
+        self._status_bar.reset()
         _input = args
         if len(_input) > 0:
             self._last_result = None
@@ -98,16 +113,25 @@ class cli_session:
                 if len(_input) == 2 and _input[0] in cli_prompt.CMD.SETTING and _input[1] in self._settings:
                     if not self.isSilent(): print("={}".format(self._settings[_input[1]]))
                     return False
+                elif _input[0] in self._delegations:
+                    delegated_cli = self._methods[_input[0]]()
+                    # if len(_input[1:]) == 0:
+                    delegated_cli.CLI._delegate(self._parents + [self.name], self.isSilent(), *_input[1:])
+                    # else:
+                    #     delegated_method = delegated_cli.CLI.execute if self.isSilent() else delegated_cli.CLI.run
+                    #     self._last_result = delegated_method(*_input[1:])
+                    return False
                 else:
                     flags = self._parser.parse_args(_input).__dict__
             except SystemExit as e: 
                 self.isFile = False
                 if sum([1 if help_key in _input else 0 for help_key in cli_prompt.CMD.HELP]) == 0:
                     fail = cli_exception.InputException(_input)
+
             if fail is not None:
                 raise fail
             # Handle read commands from a file
-            if _input[0] in cli_prompt.CMD.READ and not self.isFile:
+            if _input[0] in cli_prompt.CMD.READ:
                 finish = False
                 filepath = ' '.join(_input[1:])
                 if os.path.isfile(filepath):
@@ -174,22 +198,22 @@ class cli_session:
             self._instance.CLI.log.debug(msg)
         except: pass
 
-    def getPrompt(self, parent=[]):
-        return self._prompt()
+    def getPrompt(self, parents=[]):
+        return self._build_prompt(parents)._prompt()
+        # return self._prompt()
 
-    def _build_prompt(self):
+    def _build_prompt(self, parents=[]):
         """
         This method creates and returns a prompt method to handel user input
         """
-        prefix = [(cli_prompt.STYLE.getStyle(cli_prompt.STYLE.PROMPT), self.name), (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.MARKER), '> ')]
-        status = cli_prompt.StatusBar(self._methods, self._settings)
+        prefix = [(cli_prompt.STYLE.getStyle(cli_prompt.STYLE.PROMPT), '\\'.join(parents + [self.name])), (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.MARKER), '> ')]
         _prompt_session = prompt.PromptSession(message=prefix, style=self._style,
                                                 history=prompt.history.FileHistory("./.history"),
                                                 lexer=cli_prompt.CustomLexer(), 
                                                 completer=self._completer,
-                                                rprompt=status.rprompt, 
-                                                validator=status, 
-                                                bottom_toolbar=status)
+                                                rprompt=self._status_bar.rprompt, 
+                                                validator=self._status_bar, 
+                                                bottom_toolbar=self._status_bar)
 
         _prompt_session._prompt = _prompt_session.prompt
 
@@ -197,9 +221,10 @@ class cli_session:
             """
             resets the prompts displayed information
             """
-            input = _prompt_session._prompt()
-            status.reset()
-            return input
+            try:
+                return _prompt_session._prompt()
+            finally:
+                self._status_bar.reset()
 
         _prompt_session.prompt = wrappedPrompt
         return _prompt_session
@@ -213,20 +238,21 @@ class cli_session:
 
         @Return whether or not the last input line was successful
         """
-        if not self.isFile:
+        if not self.isFile and len(self._parents) == 0 and inputLines is None:
             self.printUsage()
         while inputLines is None or len(inputLines) > 0:
             if inputLines is None:
                 print()
             try:
-                inputLine = inputLines.pop(0) if inputLines is not None else self.getPrompt()
+                inputLine = inputLines.pop(0) if inputLines is not None else self.getPrompt(self._parents)
             except EOFError:
                 break
             try:
                 lastLine = self.runLine(inputLine)
                 if lastLine:
                     break
-            except SystemExit: pass
+            except SystemExit:
+                self._debug(traceback.format_exc())
             except Exception as e:
                 if not self.isSilent():
                     print(e)

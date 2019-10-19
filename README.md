@@ -12,6 +12,7 @@ Capabilities
     * Basic type validation for entered arguments while typing
     * Full input line validation
     * Useful help messages for all methods and arguments 
+    * Can combine CLI Class Objects together into a single Program
     * Logging support
     * Command history
     * Execution of commands from a text file, line by line
@@ -21,15 +22,48 @@ Capabilities
 
 API
 ==============
-The module exposes an API in the form of decorators. These are the available decorators:
+The module exposes an API in the form of decorators. 
 
-### Program
+First import the CLI class
+
+    from class_cli.cli import CLI
+
+create an instance and wrap a class with decorators the it exposes
+
+    cli = CLI()
+
+    @cli.Program()
+    class MyClass:
+
+        @cli.Operation()
+        def show(self):
+            return "I'm a CLI Program!"
+
+Run the main method of the CLI
+
+    if __name__ == "__main__":
+        MyClass().CLI.main()
+
+When running the script without arguments, It will open the CLI for user input:
+
+> **MyClass>** show\
+> I'm a CLI Program!
+>
+> **MyClass>** |
+
+******************
+
+## These are the available decorators:
+
+### **@Program**
 
     Program(name=None, version=None, description=None, log=None, style=None, debug=False)
 
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
         It also exposes the CLI interface with an added attribute named 'CLI'
+
+        * Only a single Program can be declared for every CLI instance
 
         @name           The name of the CLI program.                                                (Default is the class name)
         @version        The version of the CLI program.                                             (Default is a CLI without versioning)
@@ -38,15 +72,15 @@ The module exposes an API in the form of decorators. These are the available dec
         @style          A dictionary that overrides the styling of the CLI for the given keys       (Keys: CLI.STYLE)
         @debug          A boolean that defines if CLI method calling information should be logged   (Default is False)
 
-### Operation
+### **@Operation**
 
     Operation()
 
-        a method decorator that defines the execution code of a method in the CLI
+        a method decorator that defines the execution code of an operation in the CLI
 
-### Setting
+### **@Setting**
 
-    Setting(initial_value, updates_value:bool=True)
+    Setting(initial_value, updates_value=True)
    
         a method decorator that creates a setting value for the CLI with name equals to the method name.
         It defines the execution code for setting the value into the created setting.
@@ -54,18 +88,29 @@ The module exposes an API in the form of decorators. These are the available dec
         @initial_value      An initial value that the setting will hold after class initialization
         @updates_value      Whether or not calling this method automatically updates the inner setting value
 
-### Validation
+### **@Delegate**
+
+    Delegate(reuse=True)
+   
+        a method decorator that delegates control to another CLI Object instance by exposing an access point. 
+        The wrapped method does not accept any arguments and returns the CLI Object instance to delegate control to.
+        * This allows for easy integration and combination of CLI Objects into a single CLI Program
+
+        @reuse      Whether or not the returned CLI Object should be reused for later calls
+
+### **@Validation**
 
     Validation()
 
-        A method decorator that defines a validation to be performed on an execution (Operation / Setting)
+        A method decorator that defines a validation to be performed on an execution (Operation / Setting / Delegation)
         Holds the same signature as the execution it is validating and raises an exception for invalid arguments.
-        * An Operation or a Setting can have multiple Validations
+        * A single execution can have multiple Validations
         
-After Wrapping your class and methods with decorators, an instance of the class will expose the **CLI** keyword in order to access setting values and running the CLI.
 
+********
 API Example
 ===========
+
 In this example, we are wrapping a class, that holds a Setting named **value**, and exposes a method called **show** that prints it to the screen.
     
     from class_cli.cli import CLI
@@ -75,11 +120,14 @@ In this example, we are wrapping a class, that holds a Setting named **value**, 
     class MyClass:
     
         @cli.Operation()
-        def show(self):
-            print("Current value is '{}'".format(self.CLI.value))
+        def show(self): 
+            if self.CLI.name is None:
+                return "I'm a CLI Program!"
+            else:
+                return "My name is {}!".format(self.CLI.name)
             
-        @cli.Setting(initial_value=None)
-        def value(self, str):
+        @cli.Setting()
+        def name(self, str):
             return str
     
     if __name__ == "__main__":
@@ -88,26 +136,109 @@ In this example, we are wrapping a class, that holds a Setting named **value**, 
  In the main method we called **MyClass().CLI.main()** which checks for sys.argv for input and executes the commands using the instance.
 
 > $> **python3 MyClass.py show**\
-> Current value is 'None'
+> I'm a CLI Program!
  
  If we execute the script without arguments, it will open the CLI for user input:
 
 > $> **python3 MyClass.py**\
 >  **MyClass**\
-> &emsp;&emsp;&emsp;&emsp;To exit, enter one of the following ['q', 'quit', 'exit']\
-> &emsp;&emsp;&emsp;&emsp;to read commands from a file, enter one of the following ['.r', '.read']\
+> &emsp;&emsp;&emsp;&emsp;To exit, enter one of the following: **'q'** **'quit'** **'exit'**\
+> &emsp;&emsp;&emsp;&emsp;To read commands from a file, enter one of the following: **'.r'** **'.read'**\
+> &emsp;&emsp;&emsp;&emsp;To access the program settings, enter one of the following: **'.set'** **'.setting'**\
 >
->&emsp;&emsp;&emsp;&emsp;**Tip: At any time, add '-h' flag to the command for help.**\
+>&emsp;&emsp;&emsp;&emsp;**At any time, add '-h' flag to the command for help.**\
 >\
 > **MyClass>** show\
-> Current value is 'None'
+> I'm a CLI Program!
+> 
+> **MyClass>** .setting name John\
+> =John
+> 
+> **MyClass>** show\
+> My name is John!
 > 
 > **MyClass>** |
 
- You can also open the CLI directly by calling **run** instead of **main**
+ You can also open the CLI directly by calling **run(\*args)** instead of **main**
  
      if __name__ == "__main__":
          MyClass().CLI.run()
+
+Other commands:
+
+**run_line(line)** which executes a single line of String
+
+**execute(\*args)** which executes the same as **run**, but does not print out log outputs.
+
+## Instance API
+You can call the methods of a CLI Object directly without opening a CLI session:
+
+    >>> instance = MyClass()
+
+    >>> instance.show()
+    'I'm a CLI Program!'
+
+    >>> instance.name("Bob")
+    'Bob'
+
+    >> instance.show()
+    'My name is Bob!'
+
+To access the CLI and
+
+******************
+******************
+
+Delegation
+==========
+The library treats Class CLIs as building blocks that can integrate into a larger program.
+This encourages for code separation between the components of a program.
+
+This is done by wrapping a class method with the @Delegate decorator.
+
+    cli = CLI()
+    @cli.Program()
+    class Main:
+        @cli.Operation()
+        def show(self): return "Main CLI"
+
+        @cli.Delegate()
+        def inner(self):
+            inner_cli = CLI()
+            @inner_cli.Program()
+            class Inner:
+                @inner_cli.Operation()
+                def show(self): return "Inner CLI"
+            return Inner()
+
+    if __name__ == "__main__":
+        Main().CLI.main()
+
+You can access the inner CLI by calling the inner method:
+
+    >>> Main()
+    <__main__.Main object at 0x03DBF5D0>
+    
+    >>> Main().inner()
+    <__main__.Main.inner.<locals>.Inner object at 0x03B6D750>
+
+From the CLI, you can pass commands to it by prefixing with the **inner** method, or open it directly for commands
+
+> **Main>** show\
+> Main CLI
+>
+> **Main>** inner show\
+> Inner CLI
+>
+> **Main>** inner
+>
+> **Main\\Inner>** show\
+> Inner CLI
+>
+> **Main\\Inner>** q
+>
+> **Main>** |
+
 ******************
 ******************
 Logging
@@ -225,7 +356,7 @@ Type Annotations
 ===============
 Pythons type annotations are used by the CLI in order to use type validation and conversion.
 
-### Type Conversion
+## Type Conversion
 Since the user input is a String, by default the arguments passed to a method are String
 
 **Default Behavior**:
@@ -274,7 +405,7 @@ You can also use an Iterable as an annotation to specify a set of options.
 * *Since the string representation of the items in the List are used to select the value from it, The String representations of the Items need to be unique.*
 
 During typing of input, The CLI will tip the user for the expected inputs, as well as block the user from entering invalid types into a command.
-### Type Validation:
+## Type Validation:
 
     @cli.Operation()
     def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
@@ -295,7 +426,7 @@ The CLI can auto-complete command names, file paths and argument values.
     def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
         pass
     
-    @cli.Setting(initial_value=None)
+    @cli.Setting()
     def name(self, arg1):
         return arg1
 
@@ -332,13 +463,13 @@ Implementing a Custom Annotation
 ==============================
 You can use any callable(str) as a type annotation for the CLI.
 
-### Representation
+## Representation
 The CLI displays the callable to the user as its String representation. To set the description, override the **\__str__(self)** method
 
     def __str__(self):
         return "A Custom Type"
 
-### Callable
+## Callable
 The annotation must be a callable that accepts a string and returns a list of strings.
 The callable returns all the suggestions relevant to the given keyword
 
@@ -346,7 +477,7 @@ The callable returns all the suggestions relevant to the given keyword
         if key in self.options_dict:
             return self.options_dict[key]
     
-### Validation
+## Validation
 If the given string is not a valid option, you can throw an exception inside the **\__call__** method
 
     def __call__(self, str):
@@ -356,7 +487,7 @@ If the given string is not a valid option, you can throw an exception inside the
 
 This will block the user from entering a non existing key
 
-### Autocomplete Suggestion
+## Autocomplete Suggestion
 To make use of the auto complete mechanism, implement the **\__complete__(self, keyword)** method
 
     def __complete__(self, str):
@@ -368,17 +499,17 @@ To make use of the auto complete mechanism, implement the **\__complete__(self, 
 Basic Example
 =============
 This is a simple code that controls an integer via the Setting decorator
-It can only set/return it's value or add another integer to it::
+It can only set/return it's value or add another integer to it:
 
     from class_cli.cli import CLI
 
     cli = CLI()
 
     @cli.Program()
-    class IntegerController:
+    class MyClass:
         "CLI program description"
 
-        @cli.Setting(initial_value=None)
+        @cli.Setting()
         # Telling the CLI 'value' is of type int will perform automatic type validation and conversion
         def value(self, value:int):
             """
@@ -417,7 +548,7 @@ It can only set/return it's value or add another integer to it::
             return self.CLI.value
 
     if __name__ == "__main__":
-        IntegerController().CLI.main()
+        MyClass().CLI.main()
 
 Execution
 ---------
@@ -426,27 +557,27 @@ When calling the script with arguments, it will execute them and exit. If not ar
 
 This provides the following cli behavior::
 
-> **IntegerController>** .setting value\
+> **MyClass>** .setting value\
 >    =None
 >
->    **IntegerController>** add 2\
+>    **MyClass>** add 2\
 >    `2019-08-24 17:12:18,759`\
 >    `[ERROR] Must initialize setting 'value' before performing operations`
 >
->    **IntegerController>** .setting value 5\
+>    **MyClass>** .setting value 5\
 >    =5
 >
->    **IntegerController>** add 2\
+>    **MyClass>** add 2\
 >   7
 >
->   **IntegerController>** add 0\
+>   **MyClass>** add 0\
 >   `2019-08-24 17:12:19,800`\
 >   `[ERROR] Adding 0 will do nothing to the Integer`
 >
->   **IntegerController>** .setting value\
+>   **MyClass>** .setting value\
 >   =7
 >
->   **IntegerController>**|
+>   **MyClass>**|
 
 Initially the value was None, so trying to add 2 to it returned an error. After changing it to a valid value (5), adding 2 was possible. Trying to add 0 also throws exceptions so the ending value was 7.
 
@@ -455,19 +586,19 @@ Initially the value was None, so trying to add 2 to it returned an error. After 
 This could be solved by changing the main a bit and calling the method to set the value outside::
 
     if __name__ == "__main__":
-        ic = IntegerController()
+        ic = MyClass()
         ic.value(0)
         ic.CLI.main()
 
 That has the following interface behavior::
 
->    **IntegerController>** .setting value\
+>    **MyClass>** .setting value\
 >    =0
 >
->    **IntegerController>** add 2\
+>    **MyClass>** add 2\
 >    2
 >
->    **IntegerController>** .setting value\
+>    **MyClass>** .setting value\
 >    =2
 >
->    **IntegerController>**|
+>    **MyClass>**|

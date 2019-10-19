@@ -82,6 +82,12 @@ class CLI():
 
         def _complete(self, line):
             return [c.text for c in self.__cli_session._completer.get_completions(document.Document(line, len(line)))]
+        
+        def _validate(self, line):
+            try:
+                return self.__cli_session._status_bar._validate(document.Document(line, len(line)))
+            finally:
+                self.__cli_session._status_bar.reset()
 
         def main(self):
             """
@@ -90,6 +96,9 @@ class CLI():
             try:
                 return self.run(*(sys.argv[1:]))
             except: pass
+
+        def _delegate(self, parents, isSilent, *args):
+            return self.__cli_session._delegate(parents, isSilent, *args)
         
         def run_line(self, line):
             """
@@ -129,6 +138,7 @@ class CLI():
         """
         self.Operation = cli_methods.OperationDecorator(self.methods_dict)
         self.Setting = cli_methods.SettingDecorator(self.methods_dict)
+        self.Delegate = cli_methods.DelegateDecorator(self.methods_dict)
         self.Validation = cli_methods.ValidationDecorator(self.methods_dict)
 
     def Program(self, name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO):
@@ -165,6 +175,9 @@ class CLI():
 
                 def __str__(self):
                     return str(self._cli.instance)
+
+                def __repr__(self):
+                    return str(self)
 
                 def __getattribute__(self, name):
                     """
@@ -237,9 +250,10 @@ class CLI():
         """
         Compiles the class as a CLI
         """
-        self.methods_dict.compile(self.instance)
+        self.methods_dict.compile(self.instance, CLI.CLI_Object)
         _methods = self.methods_dict.compiled(self.instance)
         _settings = self.methods_dict.settings(self.instance)
+        _delegations = self.methods_dict.delegations(self.instance)
         _parser = cli_parser.create_parser(self.name, _methods, _settings)
         _style = prompt.styles.Style.from_dict(self.style)
-        return cli_session(self.name, self.description, self.instance, _methods, _settings, _parser, _style, silent=self.logger.isSilent())
+        return cli_session(self.name, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, silent=self.logger.isSilent())

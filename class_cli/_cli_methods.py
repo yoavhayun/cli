@@ -50,6 +50,12 @@ class Method:
         if self._execution is None:
             raise cli_exception.InitializationException("method '{}' has declared validation but did not found an implementation".format(self.__name__))
 
+        spec = self._execution.__spec__ if hasattr(self._execution, "__spec__") else inspect.getfullargspec(self._execution)
+
+        if self._type == "Delegate":
+            if len(spec.args) != 1 or spec.varargs is not None or spec.varkw is not None:
+                raise cli_exception.InitializationException("Delegation '{}' accepts arguments, which is not allowed".format(self.__name__))
+
         def compare_specs(spec1, spec2, attribute, extractor):
             if getattr(spec1, attribute) is None or getattr(spec2, attribute) is None:
                 if getattr(spec1, attribute) is None and getattr(spec2, attribute) is None:
@@ -65,7 +71,6 @@ class Method:
                 if ls2[i] != attrib:
                     raise cli_exception.InitializationException("{} '{}' has validation with non matching '{}' ({} != {})".format(self._type, self.__name__, attribute, attrib, ls2[i]))
 
-        spec = self._execution.__spec__ if hasattr(self._execution, "__spec__") else inspect.getfullargspec(self._execution)
         for validation in self._validations:
             validation_spec = validation.__spec__ if hasattr(validation, "__spec__") else inspect.getfullargspec(validation)
 
@@ -79,6 +84,7 @@ class Method:
             for attribute in attributes:
                 compare_specs(spec, validation_spec, attribute, attributes[attribute])
 
+
     def _compile(self, instance):
         """
         Compiles a method with it's operation and validation
@@ -89,12 +95,17 @@ class Method:
         this = self
         execution = self._execution
 
+        def method_validation(*args, **kwargs):
+            for validation in this._validations:
+                validation(instance, *args, **kwargs)
+
         # Bundle all the implementations together
         @cli_parser.copy_argspec(execution)
         def method(*args, **kwargs):
             for validation in this._validations:
                 validation(instance, *args, **kwargs)
             return this._execution(instance, *args, **kwargs)
+
 
         # Update the documentation of the method
         if execution.__doc__ is not None:
@@ -109,7 +120,7 @@ class Method:
 
 
         execution = method
-        return execution
+        return execution, method_validation
 
 
 class CLI_Methods(OrderedDict):
@@ -120,8 +131,10 @@ class CLI_Methods(OrderedDict):
     def __init__(self, value=None):
         self.value = None
         self._complied_methods = defaultdict(OrderedDict)
+        self._validation_methods = defaultdict(OrderedDict)
         self._wrapped_methods = defaultdict(OrderedDict)
         self._settings = defaultdict(OrderedDict)
+        self._delegations = defaultdict(OrderedDict)
 
     def __getitem__(self, item):
         """
@@ -144,13 +157,20 @@ class CLI_Methods(OrderedDict):
         """
         return self._settings[instance]
 
-    def compile(self, instance):
+    def delegations(self, instance):
+        """
+        Returns the current settings of an instance
+        """
+        return self._delegations[instance]
+
+    def compile(self, instance, delegation_object):
         """
         Compiles all the methods and setttings with the given instance
         """
         for method in self:
-            self._complied_methods[instance][method] = cli_parser.add_method_inspection(self[method]._compile(instance))
-
+            execution, validation =self[method]._compile(instance)
+            self._complied_methods[instance][method] = cli_parser.add_method_inspection(execution)
+            self._validation_methods[instance][method] = validation
             # Handle Settings
             if self[method]._type == "Setting":
                 self._settings[instance][method] = self[method].attributes["initial_value"]
@@ -164,6 +184,27 @@ class CLI_Methods(OrderedDict):
                         return res
                     return setting
                 self._wrapped_methods[instance][method] = wrapper()
+
+            # Handle Delegation
+            elif self[method]._type == "Delegate":
+                self._delegations[instance][method] = None
+                def wrapper():
+                    _method = method[:]
+                    @cli_parser.copy_argspec(self._complied_methods[instance][_method])
+                    def delegate(*args, **kwargs):
+                        if self._delegations[instance][_method] is None \
+                        or not self[_method].attributes["reuse"]:
+                            cli_object = self._complied_methods[instance][_method]()
+                            if cli_object is None or not hasattr(cli_object, "CLI") or\
+                            not issubclass(type(cli_object.CLI), delegation_object):
+                                raise cli_exception.InternalException("Delegation '{}' did not return a CLI Object (Got: {})".format(_method, type(cli_object)))
+                            self._delegations[instance][_method] = cli_object
+                        else:
+                            self._validation_methods[instance][_method]()
+                        return self._delegations[instance][_method]
+                    return delegate
+                self._wrapped_methods[instance][method] = wrapper()
+
             # Handle Operations
             else:
                 def wrapper():
@@ -242,6 +283,17 @@ class SettingDecorator(MethodDecorator):
 
     def __call__(self, initial_value=None, updates_value=True):
         self._record_attributes(**{"initial_value":initial_value, "updates_value":updates_value})
+        return super().__call__
+
+class DelegateDecorator(MethodDecorator):
+    """
+    Wraps a method as a Setting
+    """
+    def _record_method(self, method):
+        self._methods_dict[method.__name__].setExecution(method, "Delegate")
+
+    def __call__(self, reuse=True):
+        self._record_attributes(**{"reuse":reuse})
         return super().__call__
 
 class ValidationDecorator(MethodDecorator):

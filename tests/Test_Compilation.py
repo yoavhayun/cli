@@ -229,3 +229,30 @@ class Compilation(unittest.TestCase):
                 return value
 
         with self.assertRaises(AttributeError): Tester()
+
+    def test_delegation(self):
+        """
+        Tests that matching signatures compiles
+        """
+        cli = CLI()
+        @cli.Program(verbosity=None)
+        class Tester:
+            @cli.Delegate()
+            def delegate(self): return self
+        Tester().delegate()
+
+        # Test for delegation accepting args
+        cli = CLI()
+        @cli.Program(verbosity=None)
+        class Tester:
+            @cli.Delegate()
+            def delegate(self, a): return self
+        with self.assertRaises(cli_exception.InitializationException): Tester()
+
+        # Test for delegation returning non CLI Object
+        cli = CLI()
+        @cli.Program(verbosity=None)
+        class Tester:
+            @cli.Delegate()
+            def delegate(self): return None
+        with self.assertRaises(cli_exception.InternalException): Tester().delegate()

@@ -127,9 +127,10 @@ class StatusBar(prompt.validation.Validator):
         if not hasattr(self, "_msg"): self._msg = ""
         return self._msg
 
-    def __init__(self, methods, settings):
+    def __init__(self, methods, settings, delegations):
         self.methods = methods
         self.settings = settings
+        self.delegations = delegations
 
     def reset(self):
         """
@@ -171,8 +172,20 @@ class StatusBar(prompt.validation.Validator):
             msg = [(self.StyleType if idx == 0 else self.StyleSelected, 'Setting Name :  {' + ', '.join(self.settings) + '}' )]
             self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
             idx -= 1
+        if _keyword in self.delegations:
+            try:
+                delegated_cli = self.methods[_keyword]()
+
+                if len(_input) == 1:
+                    msg = [('', "Open '{}' CLI".format(delegated_cli.__name__))]
+                    self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
+                else:
+                    self._msg = delegated_cli.CLI._validate(' '.join(_input[1:]))
+            except Exception as e:
+                raise prompt.validation.ValidationError(message=str(e))
+
         # Handle Operation input
-        if _keyword in self.methods:
+        elif _keyword in self.methods:
             ins = self.methods[_keyword].__inspection__
             args = [a for a in ins.args]
             # Define basic type validator
@@ -235,7 +248,7 @@ class StatusBar(prompt.validation.Validator):
                     msg += [(self.StyleType, ' :  {' + str(types[idx][0]) + '}' if idx != 0 else "")]
                     self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
 
-                    return
+                return self()[:]
             finally:
                 # Perform basic validation on all input parts
                 for i, part in enumerate(_input[1:]):
@@ -245,6 +258,7 @@ class StatusBar(prompt.validation.Validator):
                         validator = types[i+1][1]
                         if validator and part != "":
                             validator(part)
+        return self()[:]
     
     @staticmethod
     def intersperse(lst, item):
@@ -256,10 +270,11 @@ class CustomCompleter(prompt.completion.Completer):
     """
     Class for suggesting possible completion keywords
     """
-    def __init__(self, methods, settings):
+    def __init__(self, methods, settings, delegations):
         self.path_completer = prompt.completion.PathCompleter(expanduser=True)
         self.methods = methods
         self.settings = settings
+        self.delegations = delegations
 
     def get_path_completion(self, document, complete_event, trim_input=0):
         """
@@ -305,6 +320,11 @@ class CustomCompleter(prompt.completion.Completer):
             
             elif _keyword in self.methods:
                 options = self._get_arg_completions(_input, _keyword)
+
+        elif _input and _keyword in self.delegations:
+            try:
+                options = self.methods[_keyword]().CLI._complete(' '.join(_input[1:]))
+            except: pass
         
         # Complete for read command
         elif _input and _keyword in CMD.READ:
@@ -320,7 +340,11 @@ class CustomCompleter(prompt.completion.Completer):
             options = self._get_arg_completions(_input, _keyword)
 
         # Add the help suggestion
-        for option in (["--help"] if _word.startswith('-') else []) + options:
+        if "--help" not in options and _word.startswith('-'):
+            options +=["--help"]
+
+        # return complations
+        for option in options:
             if option.startswith(_word):
                 yield prompt.completion.Completion(
                     option if ' ' not in option else "'{}'".format(option),
