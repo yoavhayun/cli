@@ -57,6 +57,10 @@ def split_input(line):
 
     return [remove_quotes(part) for part in input if part!='']
 
+def join_input(args):
+    return ' '.join([keyword if ' ' not in keyword else shlex.quote(keyword) for keyword in args])
+
+
 def format_extra_arguments(varargs, varkw):
     """
     formats *args and **kwargs as tuple([args], {key=value}) 
@@ -180,7 +184,7 @@ class StatusBar(prompt.validation.Validator):
                     msg = [('', "Open '{}' CLI".format(delegated_cli.__name__))]
                     self._msg = prompt.formatted_text.FormattedText(StatusBar.intersperse(msg, ('', ' ')))
                 else:
-                    self._msg = delegated_cli.CLI._validate(' '.join(_input[1:]))
+                    self._msg = delegated_cli.CLI._validate(join_input(_input[1:]))
             except Exception as e:
                 raise prompt.validation.ValidationError(message=str(e))
 
@@ -323,7 +327,7 @@ class CustomCompleter(prompt.completion.Completer):
 
         elif _input and _keyword in self.delegations:
             try:
-                options = self.methods[_keyword]().CLI._complete(' '.join(_input[1:]))
+                options = self.methods[_keyword]().CLI._complete(join_input(_input[1:]))
             except: pass
         
         # Complete for read command

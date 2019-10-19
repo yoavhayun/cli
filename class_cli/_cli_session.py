@@ -75,7 +75,7 @@ class cli_session:
         try:
             self._silent = isSilent
             self._parents = parents
-            self.__shell([' '.join(args)] if len(args) else None)
+            self.__shell(args)
         finally:
             self._parents = parents_state
             self._silent = silent_state
@@ -199,8 +199,10 @@ class cli_session:
         except: pass
 
     def getPrompt(self, parents=[]):
-        return self._build_prompt(parents)._prompt()
-        # return self._prompt()
+        try:
+            return self._build_prompt(parents)._prompt()
+        except prompt.output.win32.NoConsoleScreenBufferError:
+            return input()
 
     def _build_prompt(self, parents=[]):
         """
@@ -229,7 +231,7 @@ class cli_session:
         _prompt_session.prompt = wrappedPrompt
         return _prompt_session
 
-    def __shell(self, inputLines=None):
+    def __shell(self, args=None):
         """
         Runs the Interface as a shell program
 
@@ -238,24 +240,22 @@ class cli_session:
 
         @Return whether or not the last input line was successful
         """
-        if not self.isFile and len(self._parents) == 0 and inputLines is None:
+        if not self.isFile and len(self._parents) == 0 and args is None:
             self.printUsage()
-        while inputLines is None or len(inputLines) > 0:
-            if inputLines is None:
-                print()
+        lastLine = False
+        while not lastLine:
+            if args is None: print()
             try:
-                inputLine = inputLines.pop(0) if inputLines is not None else self.getPrompt(self._parents)
+                _args = args if args is not None else cli_prompt.split_input(self.getPrompt(self._parents))
             except EOFError:
                 break
             try:
-                lastLine = self.runLine(inputLine)
-                if lastLine:
-                    break
+                lastLine = self.__runArgs(_args) or args is not None
             except SystemExit:
                 self._debug(traceback.format_exc())
             except Exception as e:
                 if not self.isSilent():
-                    print(e)
+                    self._error(e)
                 else:
                     raise
 
