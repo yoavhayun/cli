@@ -126,7 +126,7 @@ class cli_session:
             except SystemExit as e: 
                 self.isFile = False
                 if sum([1 if help_key in _input else 0 for help_key in cli_prompt.CMD.HELP]) == 0:
-                    fail = cli_exception.InputException(_input)
+                    fail = cli_exception.InputException(cli_prompt.join_input(_input))
 
             if fail is not None:
                 raise fail
@@ -240,7 +240,8 @@ class cli_session:
 
         @Return whether or not the last input line was successful
         """
-        if not self.isFile and len(self._parents) == 0 and args is None:
+        delegated = not self.isFile and len(self._parents) == 0 and args is None
+        if delegated:
             self.printUsage()
         lastLine = False
         while not lastLine:
@@ -256,6 +257,7 @@ class cli_session:
             except Exception as e:
                 if not self.isSilent():
                     self._error(e)
+                    if not delegated: lastLine = True
                 else:
                     raise
 
