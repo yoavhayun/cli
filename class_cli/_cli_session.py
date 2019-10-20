@@ -127,6 +127,8 @@ class cli_session:
                 self.isFile = False
                 if sum([1 if help_key in _input else 0 for help_key in cli_prompt.CMD.HELP]) == 0:
                     fail = cli_exception.InputException(cli_prompt.join_input(_input))
+                else:
+                    return False
 
             if fail is not None:
                 raise fail
