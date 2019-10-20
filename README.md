@@ -57,7 +57,7 @@ When running the script without arguments, It will open the CLI for user input:
 
 ### **@Program**
 
-    Program(name=None, version=None, description=None, log=None, style=None, debug=False)
+    Program(name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO)
 
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
@@ -70,7 +70,7 @@ When running the script without arguments, It will open the CLI for user input:
         @description    The description of the CLI program.                                         (Default is the class documentation)
         @log            A path to a log file.                                                       (Default is no log file)
         @style          A dictionary that overrides the styling of the CLI for the given keys       (Keys: CLI.STYLE)
-        @debug          A boolean that defines if CLI method calling information should be logged   (Default is False)
+        @verbosity      Determines the verbosity level on the logger. Use None to silence STDOUT    (Keys: logging module)
 
 ### **@Operation**
 
@@ -404,17 +404,35 @@ You can also use an Iterable as an annotation to specify a set of options.
     
 * *Since the string representation of the items in the List are used to select the value from it, The String representations of the Items need to be unique.*
 
+## Type Validation
 During typing of input, The CLI will tip the user for the expected inputs, as well as block the user from entering invalid types into a command.
-## Type Validation:
 
     @cli.Operation()
-    def method(self, arg1, arg2:int=0, arg3:[1, -1]=None, *extras):
+    def method(self, arg1, arg2:int=0, arg3:[1, -1]=1, **extras):
         pass
 >**CLI>** method value number|\
 >\
 >\
 >    `invalid literal for int() with base 10: 'number'`\
->    arg1 **arg2[=0]** arg3[=None] {*extras}  :  **{<class 'int'>}**
+>    arg1 **arg2[=0]** arg3[=1] {*\*extras}  :  **{<class 'int'>}**
+
+>**CLI>** method value 0 2|\
+>\
+>\
+>    `'2' is not a valid option`\
+>    arg1 arg2[=0] **arg3[=1]** {*\*extras}  :  **{<value from: 1, -1>}**
+
+>**CLI>** method value 0 -1 arg|\
+>\
+>\
+>    `'arg' must be in the format [key]=[value]`\
+>    arg1 arg2[=0] arg3[=1] **{\*\*extras}**  :  **{<class 'dict'> [items=0]}**
+
+>**CLI>** method value 0 -1 arg=val|\
+>\
+>\
+>\
+>    arg1 arg2[=0] arg3[=1] **{\*\*extras}**  :  **{<class 'dict'> [items=1]}**
 
 ******************
 
