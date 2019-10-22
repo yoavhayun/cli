@@ -10,6 +10,7 @@ from tests.Test_StatusBar import StatusBar
 from tests.Test_Methods import Methods
 from tests.Test_Settings import Settings
 from tests.Test_Delegate import Delegate
+from tests.Test_Mock import Mock
 
 
 if __name__ == "__main__":
