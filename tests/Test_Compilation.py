@@ -33,6 +33,16 @@ class Compilation(unittest.TestCase):
             @cli.Operation()
             def foo(self): pass
         Tester()
+
+    def test_multiple_program_calls(self):
+        cli = CLI()
+
+        @cli.Program()
+        class A: pass
+
+        with self.assertRaises(cli_exception.CompilationException):
+            @cli.Program()
+            class B: pass
     
     def test_duplicate_names(self):
         """

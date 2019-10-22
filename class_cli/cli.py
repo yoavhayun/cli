@@ -35,6 +35,7 @@ import class_cli._cli_prompt as cli_prompt
 import class_cli._cli_parser as cli_parser
 import class_cli._cli_methods as cli_methods
 import class_cli._cli_logger as cli_logger
+import class_cli._cli_exception as cli_exception
 from class_cli._cli_session import cli_session
 
 class CLI():
@@ -158,12 +159,17 @@ class CLI():
             A class decorator
         """
 
+        if self.__linked is not None:
+            raise cli_exception.CompilationException("Each CLI instance can only wrap a single Class. Already wrapping '{}' Class".format(self.__linked))
+
         # Defines access to the CLI instance
         parent = self
 
         # Defines the behavior of the class outsite a CLI environment (As a class instance)
         def cli_decorator(cls):
             class Wrapper:
+                __metaclass__ = cls
+
                 def __init__(self, *args, **kwargs):
                     modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "verbosity" : verbosity}
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
@@ -196,7 +202,11 @@ class CLI():
                         except KeyError as e:
                             return object.__getattribute__(object.__getattribute__(self, "_cli").instance, name)
 
+            parent.__linked = cls.__name__
+
             return Wrapper
+        
+
         return cli_decorator
 
 ###############
@@ -207,6 +217,8 @@ class CLI():
         self.wrapped = None
         # Saves all the different implementations of all the methods
         self.methods_dict = cli_methods.CLI_Methods()
+
+        self.__linked = None
 
         # Define the default style to be used
         self.style = {
@@ -224,6 +236,7 @@ class CLI():
         Links the CLI to an instance of the wrapped class
         """
         cli = CLI()
+        cli.__linked = self.__linked
         cli.methods_dict = self.methods_dict
         
         cli.instance = cls(*args, **kwargs)
