@@ -61,7 +61,7 @@ def join_input(args):
     """
     Joins arguments back into an argument line
     """
-    return ' '.join([shlex.quote(keyword) if (True in [c.isspace() or c in ["'", '"'] for c in keyword]) else keyword for keyword in args])
+    return ' '.join([shlex.quote(str(keyword)) if (True in [c.isspace() or c in ["'", '"'] for c in str(keyword)]) else str(keyword) for keyword in args])
 
 
 def format_extra_arguments(varargs, varkw):

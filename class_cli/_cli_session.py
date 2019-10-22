@@ -89,6 +89,9 @@ class cli_session:
         @Return whether or not the execution was successful
         """
         self._status_bar.reset()
+        for arg in args:
+            if type(arg) != str:
+                raise cli_exception.InputException("'{}'. Can only exectue on string arguments ({}={})".format(cli_prompt.join_input(args), arg, type(arg)))
         _input = args
         if len(_input) > 0:
             self._last_result = None

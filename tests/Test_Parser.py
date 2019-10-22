@@ -42,6 +42,7 @@ class Parser(unittest.TestCase):
         Test for parser type convertions
         """
         tester = self.tester()
+        with self.assertRaises(cli_exception.InputException): tester.CLI.run(self.__prefix(command_prefix), "oper_type" ,5)
         self.assertEqual(tester.CLI.run_line(self.__prefix(command_prefix) + "oper_type 5"), tester.oper_type(5))
         self.assertEqual(tester.CLI.run_line(self.__prefix(command_prefix) + "oper_type -5"), tester.oper_type(-5))
         with self.assertRaises(cli_exception.InputException):
