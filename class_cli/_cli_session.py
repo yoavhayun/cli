@@ -245,24 +245,24 @@ class cli_session:
 
         @Return whether or not the last input line was successful
         """
-        delegated = not self.isFile and len(self._parents) == 0 and args is None
-        if delegated:
+        delegated = self.isFile or len(self._parents) > 0 or args is not None
+        if not delegated:
             self.printUsage()
         lastLine = False
         while not lastLine:
             if args is None: print()
             try:
-                _args = args if args is not None else cli_prompt.split_input(self.getPrompt(self._parents))
+                _args = args if args is not None and len(args) > 0 else cli_prompt.split_input(self.getPrompt(self._parents))
             except EOFError:
                 break
             try:
-                lastLine = self.__runArgs(_args) or args is not None
+                lastLine = self.__runArgs(_args) or (args is not None and len(args) > 0)
             except SystemExit:
                 self._debug(traceback.format_exc())
             except Exception as e:
                 if not self.isSilent():
                     self._error(e)
-                    if not delegated: lastLine = True
+                    if delegated: lastLine = True
                 else:
                     raise
 
