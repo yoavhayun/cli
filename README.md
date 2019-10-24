@@ -183,8 +183,6 @@ You can call the methods of a CLI Object directly without opening a CLI session:
     >> instance.show()
     'My name is Bob!'
 
-To access the CLI and
-
 ******************
 ******************
 
