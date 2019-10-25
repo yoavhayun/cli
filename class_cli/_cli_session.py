@@ -32,10 +32,6 @@ class cli_session:
         self._completer = cli_prompt.CustomCompleter(self._methods, self._settings, self._delegations)
         self._status_bar = cli_prompt.StatusBar(self._methods, self._settings, self._delegations)
 
-        try:
-            self._prompt = self._build_prompt().prompt
-        except prompt.output.win32.NoConsoleScreenBufferError:
-            self._prompt = input
         self.isFile = False
 
         self._last_result = None
