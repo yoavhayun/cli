@@ -174,7 +174,7 @@ class CLI():
                     modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "verbosity" : verbosity}
                     self.__name__ = cls.__name__
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
-                    # self.version = version
+                    
                     self.__class__.__name__ = type(self._cli.instance).__name__
                     
                     self.CLI = CLI.CLI_Object(self._cli)
