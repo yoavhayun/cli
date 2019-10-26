@@ -51,19 +51,28 @@ class General(unittest.TestCase):
         cli = CLI()
         @cli.Program()
         class Tester:
+
+            @staticmethod
+            def stat(): pass
+
             @cli.Setting()
             def set(self, value): return value
 
             @cli.Operation()
-            def get_set(self, value=None): 
+            def get_set(self, value=None):
                 if value is not None:
                     self.set(value)
                 return self.CLI.set
+
+            def access_static(self):
+                Tester.stat()
+                self.stat()
 
             @cli.Delegate()
             def delegate(self): return self
 
         tester = Tester()
+        tester.access_static()
         self.assertEqual(tester.CLI.execute("get_set"), tester.CLI.set)
         tester.set('1')
         self.assertEqual(tester.CLI.set, '1')

@@ -167,40 +167,17 @@ class CLI():
 
         # Defines the behavior of the class outsite a CLI environment (As a class instance)
         def cli_decorator(cls):
-            class Wrapper:
-                __metaclass__ = cls
+            class Wrapper(cls):
 
                 def __init__(self, *args, **kwargs):
+                    super(cls, self).__init__(*args, **kwargs)
                     modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "verbosity" : verbosity}
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
                     # self.version = version
                     self.__name__ = type(self._cli.instance).__name__
                     self.__class__.__name__ = type(self._cli.instance).__name__
                     
-                    self._cli.instance.CLI = CLI.CLI_Object(self._cli)
-
-                def __str__(self):
-                    return str(self._cli.instance)
-
-                def __repr__(self):
-                    return str(self)
-
-                def __getattribute__(self, name):
-                    """
-                    handels direct access to the wrapped instance attribute
-                    """
-
-                    # Check if requested access to CLI_Object defined attributes
-                    if name == CLI.CLI_ACCESS_KEY:
-                        return object.__getattribute__(self, "_cli").instance.CLI
-
-                    try:
-                        return object.__getattribute__(self, name)
-                    except AttributeError as e:
-                        try:
-                            return object.__getattribute__(self, "_cli").methods_dict.compiled(object.__getattribute__(self, "_cli").instance)[name]
-                        except KeyError as e:
-                            return object.__getattribute__(object.__getattribute__(self, "_cli").instance, name)
+                    self.CLI = CLI.CLI_Object(self._cli)
 
             parent.__linked = cls.__name__
 
@@ -239,7 +216,7 @@ class CLI():
         cli.__linked = self.__linked
         cli.methods_dict = self.methods_dict
         
-        cli.instance = cls(*args, **kwargs)
+        cli.instance = wrapped#cls(*args, **kwargs)
         cli.instance.__setattr__(CLI.CLI_ACCESS_KEY, wrapped)
         cli.wrapped = wrapped
         cli.name = type(cli.instance).__name__ if modifiers["name"] is None else modifiers["name"]
