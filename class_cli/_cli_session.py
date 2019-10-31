@@ -5,10 +5,13 @@ Author: Hayun, Yoav
 Email: YoavHayun@gmail.com
 """
 
-import os
+import os, sys
+import asyncio
+from prompt_toolkit.eventloop import use_asyncio_event_loop
+use_asyncio_event_loop()
 import prompt_toolkit as prompt
+from prompt_toolkit.patch_stdout import patch_stdout
 import traceback
-import sys
 
 from class_cli._colors import colors
 import class_cli._cli_prompt as cli_prompt
@@ -199,38 +202,30 @@ class cli_session:
             self._instance.CLI.log.debug(msg)
         except: pass
 
-    def getPrompt(self, parents=[]):
+    def getPrompt(self, parents=[], enable_async=True):
         try:
-            return self._build_prompt(parents)._prompt()
+            if enable_async:
+                with patch_stdout():
+                    return asyncio.get_event_loop().run_until_complete(asyncio.ensure_future(self._build_prompt(parents).prompt(async_=True)))
+            else:
+                return self._build_prompt(parents).prompt()
         except prompt.output.win32.NoConsoleScreenBufferError:
             return input()
+        finally:
+            self._status_bar.reset()
 
     def _build_prompt(self, parents=[]):
         """
         This method creates and returns a prompt method to handel user input
         """
         prefix = [(cli_prompt.STYLE.getStyle(cli_prompt.STYLE.PROMPT), '\\'.join(parents + [self.name])), (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.MARKER), '> ')]
-        _prompt_session = prompt.PromptSession(message=prefix, style=self._style,
+        return prompt.PromptSession(message=prefix, style=self._style,
                                                 history=prompt.history.FileHistory("./.history"),
                                                 lexer=cli_prompt.CustomLexer(), 
                                                 completer=self._completer,
                                                 rprompt=self._status_bar.rprompt, 
                                                 validator=self._status_bar, 
                                                 bottom_toolbar=self._status_bar)
-
-        _prompt_session._prompt = _prompt_session.prompt
-
-        def wrappedPrompt():
-            """
-            resets the prompts displayed information
-            """
-            try:
-                return _prompt_session._prompt()
-            finally:
-                self._status_bar.reset()
-
-        _prompt_session.prompt = wrappedPrompt
-        return _prompt_session
 
     def __shell(self, args=None):
         """
