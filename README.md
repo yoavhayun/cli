@@ -56,7 +56,7 @@ When running the script without arguments, It will open the CLI for user input:
 
 ### **@Program**
 
-    Program(name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO)
+    Program(name=None, version=None, description=None, log=None, style=None, async_=False, verbosity=logging.INFO)
 
         a class decorator that defines the CLI program.
         Instantiation of the wrapped user class can be used as normal python code, accessing all it's attributes.
@@ -69,6 +69,7 @@ When running the script without arguments, It will open the CLI for user input:
         @description    The description of the CLI program.                                         (Default is the class documentation)
         @log            A path to a log file.                                                       (Default is no log file)
         @style          A dictionary that overrides the styling of the CLI for the given keys       (Keys: CLI.STYLE)
+        @async_         Whether or not the Program contains async code
         @verbosity      Determines the verbosity level on the logger. Use None to silence STDOUT    (Keys: logging module)
 
 ### **@Operation**
