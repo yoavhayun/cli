@@ -246,4 +246,4 @@ class CLI():
         _delegations = self.methods_dict.delegations(self.instance)
         _parser = cli_parser.create_parser(self.name, _methods, _settings)
         _style = prompt.styles.Style.from_dict(self.style)
-        return cli_session(self.instance.__name__, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, silent=self.logger.isSilent())
+        return cli_session(self.name, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, silent=self.logger.isSilent())
