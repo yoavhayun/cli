@@ -218,6 +218,7 @@ class cli_session:
         """
         This method creates and returns a prompt method to handel user input
         """
+        print()
         prefix = [(cli_prompt.STYLE.getStyle(cli_prompt.STYLE.PROMPT), '\\'.join(parents + [self.name])), (cli_prompt.STYLE.getStyle(cli_prompt.STYLE.MARKER), '> ')]
         return prompt.PromptSession(message=prefix, style=self._style,
                                                 history=prompt.history.FileHistory("./.history"),
@@ -241,7 +242,6 @@ class cli_session:
             self.printUsage()
         lastLine = False
         while not lastLine:
-            if args is None: print()
             try:
                 _args = args if args is not None and len(args) > 0 else cli_prompt.split_input(self.getPrompt(self._parents))
             except EOFError:
