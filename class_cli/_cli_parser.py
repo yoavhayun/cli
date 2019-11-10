@@ -80,9 +80,6 @@ class IterableOptions:
     
     def __complete__(self, key):
         return [str(o) for o in self.options if str(o).lower().startswith(key.lower())]
-    
-    def __str__(self):
-        return ', '.join([str(o) for o in self.options])
 
     def find(self, key):
         for option in self.options:
@@ -93,8 +90,10 @@ class IterableOptions:
         return self.find(key)
 
     def __str__(self):
-        return "<value from: {}>".format(', '.join([str(k) for k in self.options]))
-
+        options = [k for k in self.options]
+        if len(options) > 3:
+            options = options[:2] + ['...'] + [options[-1]]
+        return "<value from: {}>".format(', '.join([str(k) for k in options]))
 
     def __repr__(self):
         return str(self)
