@@ -249,3 +249,8 @@ class CLI():
         _parser = cli_parser.create_parser(self.name, _methods, _settings)
         _style = prompt.styles.Style.from_dict(self.style)
         return cli_session(self.name, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, async_=self._async, silent=self.logger.isSilent())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback): pass
