@@ -7,14 +7,14 @@ It allows for separation in implementation between method execution and it's arg
 
 ## Capabilities
 
-    * Full command and argument auto-completion and suggestions
-    * Basic type validation for entered arguments while typing
-    * Full input line validation
-    * Useful help messages for all methods and arguments 
-    * Can combine CLI Class Objects together into a single Program
-    * Logging support
-    * Command history
-    * Execution of commands from a text file, line by line
+* Full command and argument auto-completion and suggestions
+* Basic type validation for entered arguments while typing
+* Full input line validation
+* Useful help messages for all methods and arguments 
+* Can combine CLI Class Objects together into a single Program
+* Logging support
+* Command history
+* Execution of commands from a text file, line by line
 
 ******************
 ******************
@@ -113,8 +113,8 @@ When running the script without arguments, It will open the CLI for user input:
 In this example, we are wrapping a class, that holds a Setting named **value**, and exposes a method called **show** that prints it to the screen.
 
     from class_cli.cli import CLI
+
     cli = CLI()
-    
     @cli.Program()
     class MyClass:
     
@@ -203,9 +203,9 @@ This is done by wrapping a class method with the @Delegate decorator.
         @cli.Delegate()
         def inner(self):
             inner_cli = CLI()
-            @inner_cli.Program()
+            @cli.Program()
             class Inner:
-                @inner_cli.Operation()
+                @cli.Operation()
                 def show(self): return "Inner CLI"
             return Inner()
 
@@ -517,3 +517,50 @@ To make use of the auto complete mechanism, implement the **\__complete__(self, 
 
     def __complete__(self, str):
         return [s for s in self.suggestions if s.startswith(str)]
+
+# Dynamic Iterable Annotation
+
+We've seen that you can use an iterable as an annotation for a variable
+
+    @cli.Program()
+    class MyClass:
+        @cli.Operation()
+        def oper(self, value:[True, False]):
+            print("You have selected", value)
+
+In this example, we are using a list to specify that only boolean values are accepted.
+
+What if we want to use a list that is dynamic and can change throughout the run of the program.
+To do that, we need to define the list outside the class scope in order to access it in method signature
+
+    values = [1, 2, 3]
+
+    @cli.Program()
+    class MyClass:
+        @cli.Operation()
+        def oper(self, value:values):
+            print("You have selected", value)
+
+        @cli.Operation()
+        def add_value(self, value:int):
+            values.append(value)
+
+The **oper** operation will now accept values in [1, 2, 3].
+We can also use the **add_value** operation in order to add more options to be selected
+
+For better code structure, we can use the **with** statement with the CLI object
+
+    with CLI() as cli:
+        values = [1, 2, 3]
+
+        @cli.Program()
+        class MyClass:
+            @cli.Operation()
+            def oper(self, value:values):
+                print("You have selected", value)
+
+            @cli.Operation()
+            def add_value(self, value:int):
+                values.append(value)
+
+This will make it clear that the **values** variable is associated with the CLI.

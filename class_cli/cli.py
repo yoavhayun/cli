@@ -137,10 +137,54 @@ class CLI():
         """
         Defines all the method decorators available
         """
-        self.Operation = cli_methods.OperationDecorator(self.methods_dict)
-        self.Setting = cli_methods.SettingDecorator(self.methods_dict)
-        self.Delegate = cli_methods.DelegateDecorator(self.methods_dict)
-        self.Validation = cli_methods.ValidationDecorator(self.methods_dict)
+        self.__Operation = cli_methods.OperationDecorator(self.methods_dict)
+        self.__Setting = cli_methods.SettingDecorator(self.methods_dict)
+        self.__Delegate = cli_methods.DelegateDecorator(self.methods_dict)
+        self.__Validation = cli_methods.ValidationDecorator(self.methods_dict)
+    
+    def Operation(self):
+        """
+        Method Decorator
+        Defines a class method as a CLI Operation
+
+        The wrapped method defines the execution of an operation in the CLI
+        """
+        return self.__Operation()
+
+    def Setting(self, initial_value=None, updates_value=True):
+        """
+        Method Decorator
+        Defines a class method as a CLI Setting
+
+        The wrapped method defines how to set the value of the setting.
+        It is expected to return the new value the setting should hold after execution.
+
+        Accepts:
+            @initial_value      The initial value the setting will hold after instantiation
+            @updates_value      Wether or not calling the method will automatically update the setting value
+                                    * When updates value is False, the wrapped method is expected to return a 
+                                      string representation of the setting value
+        """
+        return self.__Setting(initial_value=initial_value, updates_value=updates_value)
+
+    def Delegate(self, reuse=True):
+        """
+        Method Decorator
+        Defines a class method as an access point to another CLI instance.
+
+        The wrapped method should accept only 'self' as an argument and return a CLI instance.
+
+        Accepts:
+            @reuse      Whether or not the returned CLI instance should be cached for future calls 
+        """
+        return self.__Delegate(reuse)
+
+    def Validation(self): 
+        """
+        Method Decorator
+        Defines a class method as a validation part of a CLI Operation, Setting or Delegation
+        """
+        return self.__Validation()
 
     def Program(self, name=None, version=None, description=None, log=None, style=None, async_=False, verbosity=logging.INFO):
         """
@@ -253,4 +297,5 @@ class CLI():
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback): pass
+    def __exit__(self, type, value, traceback):
+        print(type, value, traceback)
