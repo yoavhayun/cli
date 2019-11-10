@@ -297,5 +297,4 @@ class CLI():
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
-        print(type, value, traceback)
+    def __exit__(self, type, value, traceback): pass
