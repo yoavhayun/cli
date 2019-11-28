@@ -6,8 +6,6 @@ Email: YoavHayun@gmail.com
 """
 
 import os, sys
-import asyncio
-import prompt_toolkit.eventloop as eventloop
 import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 import traceback
@@ -19,7 +17,7 @@ import class_cli._cli_exception as cli_exception
 
 class cli_session:
 
-    def __init__(self, name, description, instance, methods, settings, delegations, parser, style, async_=False, silent=False):
+    def __init__(self, name, description, instance, methods, settings, delegations, parser, style, silent=False):
         self.name = name
         self.description = description
         self._methods = methods
@@ -27,7 +25,6 @@ class cli_session:
         self._delegations = delegations
         self._parser = parser
         self._style = style
-        self._async = async_
         self._instance = instance
         self._parents = []
         self.setSilent(silent)
@@ -206,14 +203,13 @@ class cli_session:
         print()
         try:
             with patch_stdout():
-                return self._run_prompt(parents, self._async)
+                return self._run_prompt(parents)
         except prompt.output.win32.NoConsoleScreenBufferError:
             return input()
         finally:
-            eventloop.set_event_loop(None)
             self._status_bar.reset()
 
-    def _run_prompt(self, parents=[], enable_async=True):
+    def _run_prompt(self, parents=[]):
         """
         This method creates and returns a prompt method to handel user input
         """
@@ -225,16 +221,9 @@ class cli_session:
             "completer": self._completer,
             "rprompt": self._status_bar.rprompt, 
             "validator": self._status_bar, 
-            "bottom_toolbar": self._status_bar,
-            "async_" : enable_async
+            "bottom_toolbar": self._status_bar
         }
-        if enable_async:
-            async def prompt_async():
-                eventloop.use_asyncio_event_loop()
-                return await prompt.shortcuts.prompt(**prompt_args)
-            return asyncio.get_event_loop().run_until_complete(prompt_async())
-        else:
-            return prompt.shortcuts.prompt(**prompt_args)
+        return prompt.shortcuts.prompt(**prompt_args)
 
     def __shell(self, args=None):
         """

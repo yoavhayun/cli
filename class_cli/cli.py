@@ -186,7 +186,7 @@ class CLI():
         """
         return self.__Validation()
 
-    def Program(self, name=None, version=None, description=None, log=None, style=None, async_=False, verbosity=logging.INFO):
+    def Program(self, name=None, version=None, description=None, log=None, style=None, verbosity=logging.INFO):
         """
         Class Decorator
         Defines the CLI Program using a class
@@ -197,7 +197,6 @@ class CLI():
             description     A textual description of the program
             style           Change the formatting style of the CLI components
                                Dict of { CLI.STYLE.[component].value : [Format Description] }
-            async_          Whether the Program is an async program
             verbosity       The logger verbosity for STDOUT (default: logging.INFO)
 
         Returns:
@@ -216,7 +215,7 @@ class CLI():
 
                 def __init__(self, *args, **kwargs):
                     cls.__init__(self, *args, **kwargs)
-                    modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "async": async_, "verbosity" : verbosity}
+                    modifiers = {"name":name, "version":version, "description":description, "log":log, "style": style, "verbosity" : verbosity}
                     self.__name__ = cls.__name__
                     self._cli = parent._link_to_instance(self, cls, modifiers, *args, **kwargs)
                     
@@ -274,7 +273,6 @@ class CLI():
                                                         
                                             )
         cli.logger = cli_logger.CLI_Logger(modifiers["log"], modifiers["verbosity"])
-        cli._async = modifiers["async"]
         
         if modifiers["style"] is not None:
             for key in modifiers["style"]:
@@ -292,7 +290,7 @@ class CLI():
         _delegations = self.methods_dict.delegations(self.instance)
         _parser = cli_parser.create_parser(self.name, _methods, _settings)
         _style = prompt.styles.Style.from_dict(self.style)
-        return cli_session(self.name, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, async_=self._async, silent=self.logger.isSilent())
+        return cli_session(self.name, self.description, self.instance, _methods, _settings, _delegations, _parser, _style, silent=self.logger.isSilent())
 
     def __enter__(self):
         return self
