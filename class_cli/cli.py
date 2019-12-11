@@ -101,7 +101,7 @@ class CLI():
         def _delegate(self, parents, isSilent, *args):
             return self.__cli_session._delegate(parents, isSilent, *args)
         
-        def run_line(self, line):
+        def __call__(self, line=''):
             """
             Executes a single input line on the program
             """

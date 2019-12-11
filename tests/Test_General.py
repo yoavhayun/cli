@@ -27,22 +27,22 @@ class General(unittest.TestCase):
             def delegate(self): return self
 
         tester = Tester()
-        self.assertEqual(tester.CLI.run_line("oper 'oneword'"), "oneword")
-        self.assertEqual(tester.CLI.run_line('oper "oneword"'), "oneword")
-        self.assertEqual(tester.CLI.run_line("oper 'two words'"), "two words")
-        self.assertEqual(tester.CLI.run_line('oper "two words"'), "two words")
-        self.assertEqual(tester.CLI.run_line("oper 'two words'"), "two words")
-        self.assertEqual(tester.CLI.run_line('oper "prefix \'inner words\' suffix"'), "prefix 'inner words' suffix")
-        self.assertEqual(tester.CLI.run_line("oper 'prefix \"inner words\" suffix'"), 'prefix "inner words" suffix')
+        self.assertEqual(tester.CLI("oper 'oneword'"), "oneword")
+        self.assertEqual(tester.CLI('oper "oneword"'), "oneword")
+        self.assertEqual(tester.CLI("oper 'two words'"), "two words")
+        self.assertEqual(tester.CLI('oper "two words"'), "two words")
+        self.assertEqual(tester.CLI("oper 'two words'"), "two words")
+        self.assertEqual(tester.CLI('oper "prefix \'inner words\' suffix"'), "prefix 'inner words' suffix")
+        self.assertEqual(tester.CLI("oper 'prefix \"inner words\" suffix'"), 'prefix "inner words" suffix')
 
-        self.assertEqual(tester.CLI.run_line("delegate oper 'oneword'"), "oneword")
-        self.assertEqual(tester.CLI.run_line('delegate oper "oneword"'), "oneword")
-        self.assertEqual(tester.CLI.run_line("delegate oper 'two words'"), "two words")
-        self.assertEqual(tester.CLI.run_line('delegate oper "two words"'), "two words")
-        self.assertEqual(tester.CLI.run_line('delegate oper "prefix \'inner words\' suffix"'), "prefix 'inner words' suffix")
-        self.assertEqual(tester.CLI.run_line("delegate oper 'prefix \"inner words\" suffix'"), 'prefix "inner words" suffix')
+        self.assertEqual(tester.CLI("delegate oper 'oneword'"), "oneword")
+        self.assertEqual(tester.CLI('delegate oper "oneword"'), "oneword")
+        self.assertEqual(tester.CLI("delegate oper 'two words'"), "two words")
+        self.assertEqual(tester.CLI('delegate oper "two words"'), "two words")
+        self.assertEqual(tester.CLI('delegate oper "prefix \'inner words\' suffix"'), "prefix 'inner words' suffix")
+        self.assertEqual(tester.CLI("delegate oper 'prefix \"inner words\" suffix'"), 'prefix "inner words" suffix')
 
-        self.assertEqual(tester.CLI.run_line("delegate oper '\"nospace\"'"), '"nospace"')
+        self.assertEqual(tester.CLI("delegate oper '\"nospace\"'"), '"nospace"')
 
     def test_cli_access(self):
         """
