@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
  
 setup(name='class_cli',
-      version='0.3.2',
+      version='0.3.3',
       url='https://github.com/yoavhayun/CLI',
       license='GNU General Public License v3.0',
       author='Yoav Hayun',
