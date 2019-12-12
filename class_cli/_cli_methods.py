@@ -9,8 +9,8 @@ from collections import OrderedDict, defaultdict
 from abc import ABC, abstractmethod
 from enum import Enum
 import inspect
-import class_cli._inner._cli_parser as cli_parser
-import class_cli._inner._cli_exception as cli_exceptions
+import class_cli._cli_parser as cli_parser
+import class_cli._cli_exception as cli_exceptions
 
 class Method:
     """

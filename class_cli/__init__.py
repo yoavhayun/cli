@@ -19,5 +19,5 @@ Author: Hayun, Yoav
 Email: YoavHayun@gmail.com
 '''
 
-from class_cli._inner._cli import CLI
-import class_cli._inner._cli_exception as cli_exceptions
+from class_cli._cli import CLI
+import class_cli._cli_exception as cli_exceptions

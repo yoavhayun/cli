@@ -30,13 +30,13 @@ import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit import document
 
-from class_cli._inner._colors import colors
-import class_cli._inner._cli_prompt as cli_prompt
-import class_cli._inner._cli_parser as cli_parser
-import class_cli._inner._cli_methods as cli_methods
-import class_cli._inner._cli_logger as cli_logger
-import class_cli._inner._cli_exception as cli_exceptions
-from class_cli._inner._cli_session import cli_session
+from class_cli._colors import colors
+import class_cli._cli_prompt as cli_prompt
+import class_cli._cli_parser as cli_parser
+import class_cli._cli_methods as cli_methods
+import class_cli._cli_logger as cli_logger
+import class_cli._cli_exception as cli_exceptions
+from class_cli._cli_session import cli_session
 
 class CLI():
     """
