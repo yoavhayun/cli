@@ -1,6 +1,6 @@
 import unittest
-from class_cli.cli import CLI
-import class_cli._cli_exception as cli_exception
+from class_cli import CLI
+from class_cli import cli_exceptions
 
 class Methods(unittest.TestCase):
     
@@ -154,7 +154,7 @@ class Methods(unittest.TestCase):
         
         non_existing = '-'
 
-        with self.assertRaises(cli_exception.InputException):
+        with self.assertRaises(cli_exceptions.InputException):
             tester.CLI.execute("op_iterable", non_existing)
 
 

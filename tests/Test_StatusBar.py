@@ -1,5 +1,5 @@
 import unittest
-from class_cli.cli import CLI
+from class_cli import CLI
 from prompt_toolkit.validation import ValidationError
 
 class StatusBar(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
-from class_cli.cli import CLI
-import class_cli._cli_exception as cli_exception
+from class_cli import CLI
+from class_cli import cli_exceptions
 
 class Parser(unittest.TestCase):
     
@@ -42,10 +42,10 @@ class Parser(unittest.TestCase):
         Test for parser type convertions
         """
         tester = self.tester()
-        with self.assertRaises(cli_exception.InputException): tester.CLI.run(self.__prefix(command_prefix), "oper_type" ,5)
+        with self.assertRaises(cli_exceptions.InputException): tester.CLI.run(self.__prefix(command_prefix), "oper_type" ,5)
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_type 5"), tester.oper_type(5))
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_type -5"), tester.oper_type(-5))
-        with self.assertRaises(cli_exception.InputException):
+        with self.assertRaises(cli_exceptions.InputException):
             tester.CLI(self.__prefix(command_prefix) + "oper_type -")
 
     def test_parser_args(self, command_prefix=''):
@@ -62,7 +62,7 @@ class Parser(unittest.TestCase):
         Test for parsers handeling of **kwargs
         """
         tester = self.tester()
-        with self.assertRaises(cli_exception.InputException):
+        with self.assertRaises(cli_exceptions.InputException):
             tester.CLI(self.__prefix(command_prefix) + "oper_kwargs a")
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_kwargs a=1"), tester.oper_kwargs(a='1'))
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_kwargs a=1   b=2    c=3"), tester.oper_kwargs(a='1', b='2', c='3'))
@@ -86,9 +86,9 @@ class Parser(unittest.TestCase):
         tester = self.tester()
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
         self.assertEqual(tester.CLI(self.__prefix(command_prefix) + "oper_all 5 a=1 a b b=2 c c=3"), tester.oper_all(5, 'a', 'b', 'c', a='1', b='2', c='3'))
-        with self.assertRaises(cli_exception.InputException):
+        with self.assertRaises(cli_exceptions.InputException):
             tester.CLI(self.__prefix(command_prefix) + "oper_all a=1 a b b=2 c c=3 5s")
-        with self.assertRaises(cli_exception.InputException):
+        with self.assertRaises(cli_exceptions.InputException):
             tester.CLI(self.__prefix(command_prefix) + "oper_all - a=1 a b b=2 c c=3")
 
     def test_parser_delegate(self):

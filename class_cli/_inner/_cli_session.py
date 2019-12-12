@@ -10,10 +10,10 @@ import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 import traceback
 
-from class_cli._colors import colors
-import class_cli._cli_prompt as cli_prompt
-import class_cli._cli_parser as cli_parser
-import class_cli._cli_exception as cli_exception
+from class_cli._inner._colors import colors
+import class_cli._inner._cli_prompt as cli_prompt
+import class_cli._inner._cli_parser as cli_parser
+import class_cli._inner._cli_exception as cli_exceptions
 
 class cli_session:
 
@@ -87,7 +87,7 @@ class cli_session:
         self._status_bar.reset()
         for arg in args:
             if type(arg) != str:
-                raise cli_exception.InputException("'{}'. Can only exectue on string arguments ({}={})".format(cli_prompt.join_input(args), arg, type(arg)))
+                raise cli_exceptions.InputException("'{}'. Can only exectue on string arguments ({}={})".format(cli_prompt.join_input(args), arg, type(arg)))
         _input = args
         if len(_input) > 0:
             self._last_result = None
@@ -125,7 +125,7 @@ class cli_session:
             except SystemExit as e: 
                 self.isFile = False
                 if sum([1 if help_key in _input else 0 for help_key in cli_prompt.CMD.HELP]) == 0:
-                    fail = cli_exception.InputException(cli_prompt.join_input(_input))
+                    fail = cli_exceptions.InputException(cli_prompt.join_input(_input))
                 else:
                     return False
 
@@ -165,9 +165,9 @@ class cli_session:
                 args += _args
 
                 if varargs is None and len(_args) > 0:
-                    raise cli_exception.InputException("'{}'. Method '{}' does not accept *args".format(_input, keyword))
+                    raise cli_exceptions.InputException("'{}'. Method '{}' does not accept *args".format(_input, keyword))
                 if varkw is None and len(kwargs) > 0:
-                    raise cli_exception.InputException("'{}'. Method '{}' does not accept **kwargs".format(_input, keyword))
+                    raise cli_exceptions.InputException("'{}'. Method '{}' does not accept **kwargs".format(_input, keyword))
 
                 # Execute the selected method
                 try:

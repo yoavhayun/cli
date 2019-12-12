@@ -1,6 +1,6 @@
 import unittest
-from class_cli.cli import CLI
-import class_cli._cli_exception as cli_exception
+from class_cli import CLI
+from class_cli import cli_exceptions
 from tests.Test_Methods import Methods
 
 class Compilation(unittest.TestCase):
@@ -14,7 +14,7 @@ class Compilation(unittest.TestCase):
         class Tester:
             @cli.Validation()
             def foo(self): pass
-        with self.assertRaises(cli_exception.InitializationException): Tester()
+        with self.assertRaises(cli_exceptions.InitializationException): Tester()
 
         cli = CLI()
         @cli.Program(verbosity=None)
@@ -40,7 +40,7 @@ class Compilation(unittest.TestCase):
         @cli.Program()
         class A: pass
 
-        with self.assertRaises(cli_exception.CompilationException):
+        with self.assertRaises(cli_exceptions.CompilationException):
             @cli.Program()
             class B: pass
     
@@ -50,7 +50,7 @@ class Compilation(unittest.TestCase):
         """
         cli = CLI()
 
-        with self.assertRaises(cli_exception.CompilationException):
+        with self.assertRaises(cli_exceptions.CompilationException):
             @cli.Program(verbosity=None)
             class Tester:
                 @cli.Operation()
@@ -58,7 +58,7 @@ class Compilation(unittest.TestCase):
                 @cli.Setting()
                 def foo(self): pass
 
-        with self.assertRaises(cli_exception.CompilationException):
+        with self.assertRaises(cli_exceptions.CompilationException):
             @cli.Program(verbosity=None)
             class Tester:
                 @cli.Operation()
@@ -66,7 +66,7 @@ class Compilation(unittest.TestCase):
                 @cli.Operation()
                 def foo(self): pass
 
-        with self.assertRaises(cli_exception.CompilationException):
+        with self.assertRaises(cli_exceptions.CompilationException):
             @cli.Program(verbosity=None)
             class Tester:
                 @cli.Setting()
@@ -121,7 +121,7 @@ class Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, b): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for different *args names
@@ -132,7 +132,7 @@ class Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self, *b): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for different **kwargs names
@@ -143,7 +143,7 @@ class Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self, **b): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for missing *args
@@ -154,7 +154,7 @@ class Compilation(unittest.TestCase):
             def oper(self, *a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for missing *args
@@ -165,7 +165,7 @@ class Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, *a): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for missing **kwargs
@@ -176,7 +176,7 @@ class Compilation(unittest.TestCase):
             def oper(self, **a): pass
             @cli.Operation()
             def oper(self): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for missing **kwargs
@@ -187,7 +187,7 @@ class Compilation(unittest.TestCase):
             def oper(self): pass
             @cli.Operation()
             def oper(self, **a): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for non matching default values
@@ -198,7 +198,7 @@ class Compilation(unittest.TestCase):
             def oper(self, a=0): pass
             @cli.Operation()
             def oper(self, a): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
         # Test for non matching default values
@@ -209,7 +209,7 @@ class Compilation(unittest.TestCase):
             def oper(self, a): pass
             @cli.Operation()
             def oper(self, a=0): pass
-        with self.assertRaises(cli_exception.InitializationException): 
+        with self.assertRaises(cli_exceptions.InitializationException): 
             Tester()
 
     def test_constructor_accessability(self):
@@ -226,7 +226,7 @@ class Compilation(unittest.TestCase):
             def value(self, values):
                 return value
 
-        with self.assertRaises(cli_exception.InitializationException): Tester()
+        with self.assertRaises(cli_exceptions.InitializationException): Tester()
 
         cli = CLI()
         @cli.Program(verbosity=None)
@@ -257,7 +257,7 @@ class Compilation(unittest.TestCase):
         class Tester:
             @cli.Delegate()
             def delegate(self, a): return self
-        with self.assertRaises(cli_exception.InitializationException): Tester()
+        with self.assertRaises(cli_exceptions.InitializationException): Tester()
 
         # Test for delegation returning non CLI Object
         cli = CLI()
@@ -265,4 +265,4 @@ class Compilation(unittest.TestCase):
         class Tester:
             @cli.Delegate()
             def delegate(self): return None
-        with self.assertRaises(cli_exception.InternalException): Tester().delegate()
+        with self.assertRaises(cli_exceptions.InternalException): Tester().delegate()

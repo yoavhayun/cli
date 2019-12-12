@@ -1,5 +1,5 @@
 import unittest
-from class_cli.cli import CLI
+from class_cli import CLI
 
 class General(unittest.TestCase):
     def test_help_behavior(self):

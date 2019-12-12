@@ -30,13 +30,13 @@ import prompt_toolkit as prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit import document
 
-from class_cli._colors import colors
-import class_cli._cli_prompt as cli_prompt
-import class_cli._cli_parser as cli_parser
-import class_cli._cli_methods as cli_methods
-import class_cli._cli_logger as cli_logger
-import class_cli._cli_exception as cli_exception
-from class_cli._cli_session import cli_session
+from class_cli._inner._colors import colors
+import class_cli._inner._cli_prompt as cli_prompt
+import class_cli._inner._cli_parser as cli_parser
+import class_cli._inner._cli_methods as cli_methods
+import class_cli._inner._cli_logger as cli_logger
+import class_cli._inner._cli_exception as cli_exceptions
+from class_cli._inner._cli_session import cli_session
 
 class CLI():
     """
@@ -204,7 +204,7 @@ class CLI():
         """
 
         if self.__linked is not None:
-            raise cli_exception.CompilationException("Each CLI instance can only wrap a single Class. Already wrapping '{}' Class".format(self.__linked))
+            raise cli_exceptions.CompilationException("Each CLI instance can only wrap a single Class. Already wrapping '{}' Class".format(self.__linked))
 
         # Defines access to the CLI instance
         parent = self

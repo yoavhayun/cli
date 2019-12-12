@@ -8,7 +8,7 @@ Email: YoavHayun@gmail.com
 import argparse, inspect
 from collections.abc import Iterable
 
-import class_cli._cli_prompt as cli_prompt
+import class_cli._inner._cli_prompt as cli_prompt
 
 DOC_SEP = '========================='
 

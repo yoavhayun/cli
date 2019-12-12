@@ -8,7 +8,7 @@ Email: YoavHayun@gmail.com
 import os
 import shlex, platform, enum
 import prompt_toolkit as prompt
-from class_cli._colors import colors
+from class_cli._inner._colors import colors
 
 # Defines a unique value for arguments with no defaults
 class NO_DEFAULT:

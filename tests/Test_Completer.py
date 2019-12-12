@@ -1,5 +1,5 @@
 import unittest
-from class_cli.cli import CLI
+from class_cli import CLI
 
 class Completer(unittest.TestCase):
 

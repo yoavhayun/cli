@@ -1,6 +1,6 @@
 import unittest
-from class_cli.cli import CLI
-import class_cli._cli_exception as cli_exception
+from class_cli import CLI
+from class_cli import cli_exceptions
 
 class Mock(unittest.TestCase):
 

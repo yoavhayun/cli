@@ -9,8 +9,8 @@ from collections import OrderedDict, defaultdict
 from abc import ABC, abstractmethod
 from enum import Enum
 import inspect
-import class_cli._cli_parser as cli_parser
-import class_cli._cli_exception as cli_exception
+import class_cli._inner._cli_parser as cli_parser
+import class_cli._inner._cli_exception as cli_exceptions
 
 class Method:
     """
@@ -31,7 +31,7 @@ class Method:
         Sets the execution implementation for this method
         """
         if self._execution is not None:
-            raise cli_exception.CompilationException("A Method can only have 1 execution implementation")
+            raise cli_exceptions.CompilationException("A Method can only have 1 execution implementation")
         self._execution = execution
         self._type = type
 
@@ -48,28 +48,28 @@ class Method:
         Run this before compiling
         """
         if self._execution is None:
-            raise cli_exception.InitializationException("method '{}' has declared validation but did not found an implementation".format(self.__name__))
+            raise cli_exceptions.InitializationException("method '{}' has declared validation but did not found an implementation".format(self.__name__))
 
         spec = self._execution.__spec__ if hasattr(self._execution, "__spec__") else inspect.getfullargspec(self._execution)
 
         if self._type == "Delegate":
             if len(spec.args) != 1 or spec.varargs is not None or spec.varkw is not None:
-                raise cli_exception.InitializationException("Delegation '{}' accepts arguments, which is not allowed".format(self.__name__))
+                raise cli_exceptions.InitializationException("Delegation '{}' accepts arguments, which is not allowed".format(self.__name__))
 
         def compare_specs(spec1, spec2, attribute, extractor):
             if getattr(spec1, attribute) is None or getattr(spec2, attribute) is None:
                 if getattr(spec1, attribute) is None and getattr(spec2, attribute) is None:
                     return 
                 else:
-                    raise cli_exception.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
+                    raise cli_exceptions.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
 
             ls1 = extractor(getattr(spec1, attribute))
             ls2 = extractor(getattr(spec2, attribute))
             if len(ls1) != len(ls2):
-                raise cli_exception.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
+                raise cli_exceptions.InitializationException("{} '{}' has validation with '{}' signature not matching its operation".format(self._type, self.__name__, attribute))
             for i, attrib in enumerate(ls1):
                 if ls2[i] != attrib:
-                    raise cli_exception.InitializationException("{} '{}' has validation with non matching '{}' ({} != {})".format(self._type, self.__name__, attribute, attrib, ls2[i]))
+                    raise cli_exceptions.InitializationException("{} '{}' has validation with non matching '{}' ({} != {})".format(self._type, self.__name__, attribute, attrib, ls2[i]))
 
         for validation in self._validations:
             validation_spec = validation.__spec__ if hasattr(validation, "__spec__") else inspect.getfullargspec(validation)
@@ -197,7 +197,7 @@ class CLI_Methods(OrderedDict):
                             cli_object = self._complied_methods[instance][_method]()
                             if cli_object is None or not hasattr(cli_object, "CLI") or\
                             not issubclass(type(cli_object.CLI), delegation_object):
-                                raise cli_exception.InternalException("Delegation '{}' did not return a CLI Object (Got: {})".format(_method, type(cli_object)))
+                                raise cli_exceptions.InternalException("Delegation '{}' did not return a CLI Object (Got: {})".format(_method, type(cli_object)))
                             self._delegations[instance][_method] = cli_object
                         else:
                             self._validation_methods[instance][_method]()
@@ -259,7 +259,7 @@ class MethodDecorator(ABC):
         def redirected(*args, **kwargs):
             linked_methods = self._methods_dict.compiled(args[0])
             if method.__name__ not in linked_methods:
-                raise cli_exception.InitializationException("Cannot access CLI operations and settings before an instance is constructed")
+                raise cli_exceptions.InitializationException("Cannot access CLI operations and settings before an instance is constructed")
             return linked_methods[method.__name__](*(args[1:]), **kwargs)
     
         return redirected
