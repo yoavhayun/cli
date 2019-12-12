@@ -25,7 +25,7 @@ The module exposes an API in the form of decorators.
 
 First import the CLI class
 
-    from class_cli.cli import CLI
+    from class_cli import CLI
 
 create an instance and wrap a class with decorators the it exposes
 
@@ -111,7 +111,7 @@ When running the script without arguments, It will open the CLI for user input:
 
 In this example, we are wrapping a class, that holds a Setting named **value**, and exposes a method called **show** that prints it to the screen.
 
-    from class_cli.cli import CLI
+    from class_cli import CLI
 
     cli = CLI()
     @cli.Program()
